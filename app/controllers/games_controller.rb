@@ -36,7 +36,7 @@ class GamesController < ApplicationController
        @state = GameState.new(player_id: current_player.id, game_id: @game.id)
 
        if @state.save
-          r = Redis.new()
+          r = Redis.new url: ENV["REDIS_URL"] || "redis://127.0.0.1:6379/0"
           r.publish "state.game#{@game.id}", JSON.dump(@game.players.collect(&:email))
           format.html { redirect_to @game, notice: 'Joined Game!' }
           format.json { render :show, status: :created, location: @game }

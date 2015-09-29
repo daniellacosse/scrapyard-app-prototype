@@ -5,7 +5,7 @@ class GameStatesController < ActionController::Base
 		@state = GameState.find params["id"]
 		response.headers['Content-Type'] = 'text/event-stream'
 
-		r = Redis.new()
+		r = Redis.new url: ENV["REDIS_URL"] || "redis://127.0.0.1:6379/0"
 		begin
 			r.subscribe("state.game#{@state.game.id}") do |on|
 				on.message do |event, data|
