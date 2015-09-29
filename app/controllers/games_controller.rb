@@ -1,3 +1,5 @@
+require "json"
+
 class GamesController < ApplicationController
   before_action :set_game, only: [:show, :edit, :update, :destroy]
   before_action :authenticate_player!
@@ -34,6 +36,8 @@ class GamesController < ApplicationController
        @state = GameState.new(player_id: current_player.id, game_id: @game.id)
 
        if @state.save
+          r = Redis.new()
+          r.publish "state.game#{@game.id}", JSON.dump(@game.players.collect(&:email))
           format.html { redirect_to @game, notice: 'Joined Game!' }
           format.json { render :show, status: :created, location: @game }
        else

@@ -2,22 +2,22 @@ class GameStatesController < ActionController::Base
 	include ActionController::Live
 
 	def show
-		@game_state = GameState.find params["id"]
-		@game = @game_state.game
-		@players = @game.players
-
+		@state = GameState.find params["id"]
 		response.headers['Content-Type'] = 'text/event-stream'
-		sse = GameStateHelper::SSE.new(response.stream)
 
+		r = Redis.new()
 		begin
-			loop do
-				sse.write @players.collect &:email
-
-				sleep 2
+			r.subscribe("state.game#{@state.game.id}") do |on|
+				on.message do |event, data|
+					puts event
+					response.stream.write "event: update\n"
+					response.stream.write "data: #{data}\n\n"
+				end
 			end
 		rescue IOError
 		ensure
-			sse.close
+			r.quit
+			response.stream.close
 		end
 	end
 end
