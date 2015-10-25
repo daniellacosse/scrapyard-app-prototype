@@ -22,18 +22,20 @@ ActiveRecord::Schema.define(version: 20150926225705) do
   end
 
   create_table "blueprints", force: :cascade do |t|
-    t.string   "requirement_1"
-    t.string   "requirement_1_raw_value"
-    t.string   "requirement_2"
-    t.string   "requirement_2_raw_value"
-    t.string   "requirement_3"
-    t.string   "requirement_3_raw_value"
-    t.string   "requirement_4"
-    t.string   "requirement_4_raw_value"
-    t.string   "requirement_5"
-    t.string   "requirement_5_raw_value"
-    t.datetime "created_at",              null: false
-    t.datetime "updated_at",              null: false
+    t.string   "name"
+    t.string   "rank"
+    t.string   "requirement1"
+    t.string   "raw1"
+    t.string   "requirement2"
+    t.string   "raw2"
+    t.string   "requirement3"
+    t.string   "raw3"
+    t.string   "requirement4"
+    t.string   "raw4"
+    t.string   "requirement5"
+    t.string   "raw5"
+    t.datetime "created_at",   null: false
+    t.datetime "updated_at",   null: false
   end
 
   create_table "game_states", force: :cascade do |t|
@@ -56,8 +58,22 @@ ActiveRecord::Schema.define(version: 20150926225705) do
   end
 
   create_table "parts", force: :cascade do |t|
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.string   "name"
+    t.string   "part_type"
+    t.string   "rank"
+    t.string   "armor"
+    t.string   "res"
+    t.string   "speed"
+    t.string   "effect"
+    t.string   "gives_digging"
+    t.string   "gives_flying"
+    t.string   "has_weapon"
+    t.string   "weapon_type"
+    t.string   "weapon_dmg"
+    t.string   "weapon_elem"
+    t.string   "weapon_acc"
+    t.datetime "created_at",    null: false
+    t.datetime "updated_at",    null: false
   end
 
   create_table "players", force: :cascade do |t|
@@ -85,10 +101,13 @@ ActiveRecord::Schema.define(version: 20150926225705) do
 
   create_table "scraps", force: :cascade do |t|
     t.string   "name"
-    t.string   "class"
-    t.integer  "raw_value"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.string   "scrap_type"
+    t.string   "rarity"
+    t.string   "raw_value"
+    t.string   "event_effect"
+    t.boolean  "has_event"
+    t.datetime "created_at",   null: false
+    t.datetime "updated_at",   null: false
   end
 
 end
