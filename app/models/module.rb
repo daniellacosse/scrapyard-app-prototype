@@ -1,7 +1,7 @@
-class Part < ActiveRecord::Base
+class Module < ActiveRecord::Base
 	has_one :blueprint
-	has_many :part_targets
-	has_many :targets, through: :part_targets
+	has_many :weapon_targets
+	has_many :targets, through: :weapon_targets
 	has_many :effects
 
 	def power

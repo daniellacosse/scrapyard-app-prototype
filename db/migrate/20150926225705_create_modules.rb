@@ -1,8 +1,8 @@
-class CreateParts < ActiveRecord::Migration
+class CreateModules < ActiveRecord::Migration
   def change
-    create_table :parts do |t|
+    create_table :modules do |t|
       t.string :name
-      t.string :part_type
+      t.string :mod_type
       t.string :armor
       t.string :res
       t.string :weight

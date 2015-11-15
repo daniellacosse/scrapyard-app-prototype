@@ -33,4 +33,9 @@ end
 
 Blueprint.create make_collec_from_google BLUEPRINT_GSHEET_ID
 Scrap.create make_collec_from_google SCRAP_GSHEET_ID
-Part.create make_collec_from_google PART_GSHEET_ID
+Module.create make_collec_from_google PART_GSHEET_ID
+
+# TODO: sub-collections:
+	# blueprint: requirements => options
+	# scrap: effect
+	# module: targets, effects

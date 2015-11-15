@@ -4,6 +4,6 @@ class Blueprint < ActiveRecord::Base
 	has_many :requirements
 
 	def cost
-		rank * Math.log requirements.map(&:difficulty).sum
+		rank * Math.log(requirements.map(&:difficulty).sum)
 	end
 end

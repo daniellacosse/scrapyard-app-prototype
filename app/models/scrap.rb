@@ -3,7 +3,7 @@ class Scrap < ActiveRecord::Base
 	has_one :effect
 
 	def rarity
-		# TODO: rarity
+		# TODO: rarity (by class & name)
 		1
 	end
 end
