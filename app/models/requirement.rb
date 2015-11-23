@@ -1,6 +1,7 @@
 class Requirement < ActiveRecord::Base
 	belongs_to :blueprint
-	has_many :options
+	has_many :requirement_options
+	has_many :options, through: :requirement_options
 
 	def difficulty
 		option_costs = options.map(&:cost)

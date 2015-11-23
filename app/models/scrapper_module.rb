@@ -1,8 +1,9 @@
-class Module < ActiveRecord::Base
+class ScrapperModule < ActiveRecord::Base
 	has_one :blueprint
 	has_many :weapon_targets
 	has_many :targets, through: :weapon_targets
-	has_many :effects
+	has_many :module_effects
+	has_many :effects, through: :module_effects
 
 	def power
 		raw_stat_sum = [

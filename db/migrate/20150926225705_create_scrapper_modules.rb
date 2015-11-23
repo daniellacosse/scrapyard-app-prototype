@@ -1,6 +1,6 @@
-class CreateModules < ActiveRecord::Migration
+class CreateScrapperModules < ActiveRecord::Migration
   def change
-    create_table :modules do |t|
+    create_table :scrapper_modules do |t|
       t.string :name
       t.string :mod_type
       t.string :armor
