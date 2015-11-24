@@ -7,4 +7,8 @@ class Blueprint < ActiveRecord::Base
 	def cost
 		rank * Math.log(requirements.map(&:difficulty).sum)
 	end
+
+	def add_requirement(requirement_data)
+		
+	end
 end

@@ -28,4 +28,12 @@ class ScrapperModule < ActiveRecord::Base
 	def pcr
 		power / blueprint.cost
 	end
+
+	def add_target(target_data)
+
+	end
+
+	def add_effect(effect_data)
+
+	end
 end

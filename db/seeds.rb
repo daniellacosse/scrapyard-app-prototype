@@ -25,102 +25,41 @@ def make_collec_from_google (id)
 	result
 end
 
-def create_blueprint_requirement(print_req_data)
-
-end
-
-def lazily_create_effect(effect_data)
-
-end
-
-def create_module_effect(effect_data)
-
-end
-
-def create_module_target(target_data)
-
-end
-
-def create_scrap_class(class_data)
-
-end
-
 ### SCRIPT BEGIN ###
-
 blueprints = make_collec_from_google BLUEPRINT_GSHEET_ID
 scraps = make_collec_from_google SCRAP_GSHEET_ID
 modules = make_collec_from_google PART_GSHEET_ID
 
-# make sub-collections:
+modules.each do |module_data|
+	mod = ScrapperModule.create module_data
 
-# module: targets, effects
-modules.map! do |module_data|
-	mod = ScrapperModule.create {
-
-	}
-
-	mod_data["targets"].split(/,|, /).each do |target_data|
-		create_module_target target_data, mod.id
-	end
-
-	mod_data["effects"].split(/,|, /).each do |effect_data|
-		create_module_effect effect_data, mod.id
-	end
+	mod_data["targets"].split(/,|, /).each { |t| mod.add_target t }
+	mod_data["effects"].split(/,|, /).each { |e| mod.add_effect e }
 end
 
-# blueprint: requirements => options
 blueprints.each do |blueprint_data|
-	Blueprint.create {
-		module_id: print["id"],
-		name: print["name"],
-		rank: print["rank"]
-	}
+	blueprint = Blueprint.create(
+		module_id: blueprint_data["id"],
+		name: blueprint_data["name"],
+		rank: blueprint_data["rank"]
+	)
 
-	if blueprint_data["requirement1"] && blueprint_data["requirement1_val"]
-		create_blueprint_requirement(
-			options: blueprint_data["requirement1"],
-			override_value: blueprint_data["requirement1_val"]
-		)
-	end
+	5.times do |i|
+		req_key = "requirement#{i+1}"
+		req_val_key = "requirement#{i+1}_val"
 
-	if blueprint_data["requirement2"] && blueprint_data["requirement2_val"]
-		create_blueprint_requirement(
-			options: blueprint_data["requirement2"],
-			override_value: blueprint_data["requirement2_val"]
-		)
-	end
-
-	if blueprint_data["requirement3"] && blueprint_data["requirement3_val"]
-		create_blueprint_requirement(
-			options: blueprint_data["requirement3"],
-			override_value: blueprint_data["requirement3_val"]
-		)
-	end
-
-	if blueprint_data["requirement4"] && blueprint_data["requirement4_val"]
-		create_blueprint_requirement(
-			options: blueprint_data["requirement4"],
-			override_value: blueprint_data["requirement4_val"]
-		)
-	end
-
-	if blueprint_data["requirement5"] && blueprint_data["requirement5_val"]
-		create_blueprint_requirement(
-			options: blueprint_data["requirement5"],
-			override_value: blueprint_data["requirement5_val"]
-		)
+		if blueprint_data[req_key] && blueprint_data[req_val_key]
+			blueprint.add_requirement(
+				options: blueprint_data[req_key],
+				override_value: blueprint_data[req_val_key]
+			)
+		end
 	end
 end
 
-# scrap: effect && class
 scraps.each do |scrap_data|
-	scrap = Scrap.create {
-		effect_id: lazily_create_effect scrap_data["effect"],
-		value: scrap_data["value"],
-		name: scrap_data["name"]
-	}
+	scrap = Scrap.create scrap_data
 
-	scrap_data["classes"].split(/,|, /).each do |effect|
-		create_module_effect effect, scrap.id
-	end
+	scrap_data["classes"].split(/,|, /).each { |e| scrap.add_class e }
+	scrap_data.add_effect scrap_data["effect"]
 end
