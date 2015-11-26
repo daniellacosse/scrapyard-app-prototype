@@ -8,7 +8,7 @@ class CreateScrapperModules < ActiveRecord::Migration
       t.string :weight
       t.string :gives_digging
       t.string :gives_flying
-      t.string :weapon_type
+      t.string :weapon
       t.string :weapon_dmg
       t.string :weapon_acc
 

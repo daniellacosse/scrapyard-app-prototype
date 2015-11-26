@@ -1,4 +1,4 @@
 class Effect < ActiveRecord::Base
-	belongs_to :part
-	belongs_to :scrap
+	has_many :scraper_modules
+	has_many :scraps
 end

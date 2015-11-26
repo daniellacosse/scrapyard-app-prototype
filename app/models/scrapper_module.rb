@@ -1,9 +1,19 @@
 class ScrapperModule < ActiveRecord::Base
-	has_one :blueprint
 	has_many :weapon_targets
 	has_many :targets, through: :weapon_targets
+
 	has_many :module_effects
 	has_many :effects, through: :module_effects
+
+	has_many :module_holds
+
+	def add_target(target_data)
+		weapon_targets << Target.find_or_create_by(target_data)
+	end
+
+	def add_effect(effect_data)
+		effects << Effect.find_or_create_by(effect_data)
+	end
 
 	def power
 		raw_stat_sum = [
@@ -27,13 +37,5 @@ class ScrapperModule < ActiveRecord::Base
 
 	def pcr
 		power / blueprint.cost
-	end
-
-	def add_target(target_data)
-
-	end
-
-	def add_effect(effect_data)
-
 	end
 end
