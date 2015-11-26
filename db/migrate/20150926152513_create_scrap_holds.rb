@@ -1,6 +1,8 @@
 class CreateScrapHolds < ActiveRecord::Migration
   def change
     create_table :scrap_holds do |t|
+      t.integer :scrap_id
+      t.integer :holdable_id
 
       t.timestamps null: false
     end
