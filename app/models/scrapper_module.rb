@@ -8,7 +8,7 @@ class ScrapperModule < ActiveRecord::Base
 	has_many :module_holds
 
 	def add_target(target_data)
-		weapon_targets << Target.find_or_create_by(target_data)
+		targets << Target.find_or_create_by(name: target_data)
 	end
 
 	def add_effect(effect_data)

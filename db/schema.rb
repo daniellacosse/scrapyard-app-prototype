@@ -11,42 +11,38 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20151126033529) do
+ActiveRecord::Schema.define(version: 20151127170440) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
   create_table "blueprint_holds", force: :cascade do |t|
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-  end
-
-  create_table "blueprint_requirements", force: :cascade do |t|
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-  end
-
-  create_table "blueprints", force: :cascade do |t|
-    t.string   "name"
-    t.string   "rank"
-    t.string   "requirement1"
-    t.string   "raw1"
-    t.string   "requirement2"
-    t.string   "raw2"
-    t.string   "requirement3"
-    t.string   "raw3"
-    t.string   "requirement4"
-    t.string   "raw4"
-    t.string   "requirement5"
-    t.string   "raw5"
+    t.integer  "blueprint_id"
+    t.integer  "holdable_id"
     t.datetime "created_at",   null: false
     t.datetime "updated_at",   null: false
   end
 
+  create_table "blueprint_requirements", force: :cascade do |t|
+    t.integer  "blueprint_id"
+    t.integer  "requirement_id"
+    t.datetime "created_at",     null: false
+    t.datetime "updated_at",     null: false
+  end
+
+  create_table "blueprints", force: :cascade do |t|
+    t.string   "rank"
+    t.integer  "scrapper_module_id"
+    t.datetime "created_at",         null: false
+    t.datetime "updated_at",         null: false
+  end
+
   create_table "class_options", force: :cascade do |t|
-    t.integer  "count"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.integer  "class_type_id"
+    t.integer  "option_id"
+    t.integer  "count",         default: 1
+    t.datetime "created_at",                null: false
+    t.datetime "updated_at",                null: false
   end
 
   create_table "class_types", force: :cascade do |t|
@@ -82,37 +78,22 @@ ActiveRecord::Schema.define(version: 20151126033529) do
   end
 
   create_table "module_effects", force: :cascade do |t|
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.integer  "scrapper_module_id"
+    t.integer  "effect_id"
+    t.datetime "created_at",         null: false
+    t.datetime "updated_at",         null: false
   end
 
   create_table "module_holds", force: :cascade do |t|
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.integer  "scrapper_module_id"
+    t.integer  "holdable_id"
+    t.datetime "created_at",         null: false
+    t.datetime "updated_at",         null: false
   end
 
   create_table "options", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-  end
-
-  create_table "parts", force: :cascade do |t|
-    t.string   "name"
-    t.string   "part_type"
-    t.string   "rank"
-    t.string   "armor"
-    t.string   "res"
-    t.string   "speed"
-    t.string   "effect"
-    t.string   "gives_digging"
-    t.string   "gives_flying"
-    t.string   "has_weapon"
-    t.string   "weapon_type"
-    t.string   "weapon_dmg"
-    t.string   "weapon_elem"
-    t.string   "weapon_acc"
-    t.datetime "created_at",    null: false
-    t.datetime "updated_at",    null: false
   end
 
   create_table "players", force: :cascade do |t|
@@ -134,8 +115,10 @@ ActiveRecord::Schema.define(version: 20151126033529) do
   add_index "players", ["reset_password_token"], name: "index_players_on_reset_password_token", unique: true, using: :btree
 
   create_table "requirement_options", force: :cascade do |t|
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.integer  "requirement_id"
+    t.integer  "option_id"
+    t.datetime "created_at",     null: false
+    t.datetime "updated_at",     null: false
   end
 
   create_table "requirements", force: :cascade do |t|
@@ -145,35 +128,54 @@ ActiveRecord::Schema.define(version: 20151126033529) do
   end
 
   create_table "scrap_classes", force: :cascade do |t|
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.integer  "scrap_id"
+    t.integer  "class_type_id"
+    t.datetime "created_at",    null: false
+    t.datetime "updated_at",    null: false
   end
 
   create_table "scrap_effects", force: :cascade do |t|
+    t.integer  "scrap_id"
+    t.integer  "effect_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end
 
   create_table "scrap_holds", force: :cascade do |t|
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.integer  "scrap_id"
+    t.integer  "holdable_id"
+    t.datetime "created_at",  null: false
+    t.datetime "updated_at",  null: false
   end
 
   create_table "scrap_options", force: :cascade do |t|
     t.integer  "count",      default: 1
+    t.integer  "scrap_id"
+    t.integer  "option_id"
     t.datetime "created_at",             null: false
     t.datetime "updated_at",             null: false
   end
 
+  create_table "scrapper_modules", force: :cascade do |t|
+    t.string   "name"
+    t.string   "mod_type"
+    t.string   "armor"
+    t.string   "res"
+    t.string   "weight"
+    t.string   "gives_digging"
+    t.string   "gives_flying"
+    t.string   "weapon"
+    t.string   "weapon_dmg"
+    t.string   "weapon_acc"
+    t.datetime "created_at",    null: false
+    t.datetime "updated_at",    null: false
+  end
+
   create_table "scraps", force: :cascade do |t|
     t.string   "name"
-    t.string   "scrap_type"
-    t.string   "rarity"
-    t.string   "raw_value"
-    t.string   "event_effect"
-    t.boolean  "has_event"
-    t.datetime "created_at",   null: false
-    t.datetime "updated_at",   null: false
+    t.string   "value"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
   create_table "targets", force: :cascade do |t|
@@ -183,8 +185,10 @@ ActiveRecord::Schema.define(version: 20151126033529) do
   end
 
   create_table "weapon_targets", force: :cascade do |t|
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.integer  "scrapper_module_id"
+    t.integer  "target_id"
+    t.datetime "created_at",         null: false
+    t.datetime "updated_at",         null: false
   end
 
 end

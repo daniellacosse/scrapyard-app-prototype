@@ -15,7 +15,7 @@ class Scrap < ActiveRecord::Base
 	end
 
 	def add_effect(effect_data)
-		effect_data << Effect.find_or_create_by(effect_data)
+		effects << Effect.find_or_create_by(effect_data)
 	end
 
 	def rarity
