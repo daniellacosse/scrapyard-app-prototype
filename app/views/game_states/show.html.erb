@@ -1,0 +1,181 @@
+<p>
+  <strong>Id #:</strong>
+  <%= @game_state.game.guid %>
+</p>
+
+<p id="current-players">
+  <b>Players:</b>
+  <% @game_state.game.players.each do |player| %>
+    <br>
+    <%= player.email %>
+  <% end %>
+</p>
+
+<!-- RAW MATERIALS -->
+<p id="player-materials">
+   <b>Raw Materials:</b> <%= @game_state[:raw] %>
+</p>
+
+<!-- SCRAP FORM -->
+<p>
+   <b>Take Scrap:</b>
+   <form action="/game-state/<%= @game_state.id %>/draw/scrap" method="put">
+      <%= token_tag nil %>
+      <select name="card_id">
+         <option>Choose a scrap</option>
+         <% @scraps do |scrap| %>
+            <option value="<%= scrap.id %>"><%= scrap.name %></option>
+         <% end %>
+      </select>
+      <input type="sumbit">
+         Draw
+      </input>
+   </form>
+</p>
+
+<!-- BLUEPRINT FORM  -->
+<p>
+   <b>Take Blueprint:</b>
+   <form action="/game-state/<%= @game_state.id %>/draw/blueprint" method="put">
+      <%= token_tag nil %>
+      <select id="blueprint-select" name="card_id">
+         <option>Choose a blueprint</option>
+         <% @game.available_blueprints.each do |blueprint| %>
+            <option value="<%= blueprint.id %>">
+               <%= blueprint.name %>
+            </option>
+         <% end %>
+      </select>
+      <input type="sumbit">
+         Draw
+      </input>
+   </form>
+</p>
+
+<!-- HELD SCRAPS -->
+<p>
+   <b>Held Scraps:</b>
+   <ul id="held-scraps">Loading...</ul>
+<p>
+
+<!-- HELD BLUEPRINTS -->
+<p>
+   <b>Held Blueprints:</b>
+   <ul id="held-blueprints">Loading...</ul>
+</p>
+
+<!-- HELD SCRAPPER MODULES -->
+<p>
+   <b>Held Scrapper Modules:</b>
+   <ul id="held-modules">Loading...</ul>
+</p>
+
+<%= link_to 'Forfeit' %>
+
+<script>
+   var gameSource = new EventSource(
+      "/game/" + <%= @game_state.id %> + ".json"
+   );
+   var stateSource = new EventSource(
+      "/game_states/" + <%= @game_state.id %> + ".json"
+   );
+
+   gameSource.addEventListener("update", function(event) {
+      var data = JSON.parse(event.data);
+
+      renderPlayers(data.players);
+      renderBlueprintSelect(data.available_blueprints);
+   });
+
+   stateSource.addEventListener("update", function* (event) {
+      var data = JSON.parse(event.data);
+
+      renderTurnStatus(data.is_my_turn);
+      renderRawMaterials(data.raw);
+      renderHeldCards(data.cards);
+   });
+
+   function renderBlueprintSelect(blueprints) {
+      if (blueprints && blueprints.length) {
+         var blueprintFormHTML = "<option>Choose a blueprint</option>";
+
+         for (var blueprint of blueprints) {
+            blueprintFormHTML +=
+               "<option value='" +
+               blueprint.id +
+               "'>" +
+               blueprint.name +
+               "</option>"
+         }
+
+         $("#blueprint-select").html(blueprintFormHTML);
+      }
+   }
+
+   function renderHeldCards(cards) {
+      if (cards && cards.blueprint) {
+         var heldBlueprintsHTML = "";
+
+         for (var blueprint of cards.blueprint) {
+            heldBlueprintsHTML += "<li>" + blueprint.name + "</li>";
+
+            // link to trade
+            // link to discard
+         }
+
+         $("#held-blueprints").html(heldBlueprintsHTML);
+      } else $("#held-blueprints").html("No Held Blueprints");
+
+      if (cards && cards.scrap) {
+         var heldScrapsHTML = "";
+
+         for (var scrap of cards.scrap) {
+            heldScrapsHTML += "<li>" + scrap.name + "</li>";
+
+            // link to Use
+            // link to sell
+            // link to trade
+         }
+
+         $("#held-scraps").html(heldScrapsHTML);
+      } else $("#held-scraps").html("No Held Scraps");
+
+      if (cards && cards.scrapper_module) {
+         var heldModulesHTML = "";
+
+         for (var scrapper_module of cards.scrapper_module) {
+            heldModulesHTML += "<li>" + scrapper_module.name + "</li>";
+
+            // link to trade
+         }
+
+         $("#held-modules").html(heldModulesHTML);
+      } else $("#held-modules").html("No Held Modules");
+   }
+
+   function renderPlayers(players) {
+      if (players) {
+         var playerHTML = "<b>Players:</b>";
+
+         for (var player of players) {
+            playerHTML += ("<br>" + player);
+         }
+
+         $("#current-players").html(playerHTML);
+      }
+   }
+
+   function renderRawMaterials(raw) {
+      if (raw) {
+         var rawMaterialsHTML = "<b>Raw Materials:</b>" + data.raw;
+
+         $("#player-materials").html(rawMaterialsHTML);
+      }
+   }
+
+   function renderTurnStatus(status) {
+      if (status) {
+
+      }
+   }
+</script>
