@@ -4,9 +4,9 @@ class Game < ActiveRecord::Base
 
 	def available_blueprints
 		game_states
-			.collect &:cards
+			.collect(&:cards)
 			.flatten
 			.select { |card| card[:holdable_type] == "blueprint" }
-			.collect &:id
+			.collect(&:id)
 	end
 end
