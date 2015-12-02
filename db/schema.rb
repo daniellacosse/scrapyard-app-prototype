@@ -18,9 +18,9 @@ ActiveRecord::Schema.define(version: 20151127170440) do
 
   create_table "blueprint_holds", force: :cascade do |t|
     t.integer  "blueprint_id"
-    t.integer  "holdable_id"
-    t.datetime "created_at",   null: false
-    t.datetime "updated_at",   null: false
+    t.integer  "game_state_id"
+    t.datetime "created_at",    null: false
+    t.datetime "updated_at",    null: false
   end
 
   create_table "blueprint_requirements", force: :cascade do |t|
@@ -60,16 +60,13 @@ ActiveRecord::Schema.define(version: 20151127170440) do
 
   create_table "game_states", force: :cascade do |t|
     t.integer  "player_id"
+    t.integer  "player_number"
     t.integer  "game_id"
     t.integer  "raw"
     t.boolean  "is_my_turn"
-    t.integer  "holdable_id"
-    t.string   "holdable_type"
     t.datetime "created_at",    null: false
     t.datetime "updated_at",    null: false
   end
-
-  add_index "game_states", ["holdable_type", "holdable_id"], name: "index_game_states_on_holdable_type_and_holdable_id", using: :btree
 
   create_table "games", force: :cascade do |t|
     t.integer  "guid"
@@ -86,7 +83,7 @@ ActiveRecord::Schema.define(version: 20151127170440) do
 
   create_table "module_holds", force: :cascade do |t|
     t.integer  "scrapper_module_id"
-    t.integer  "holdable_id"
+    t.integer  "game_state_id"
     t.datetime "created_at",         null: false
     t.datetime "updated_at",         null: false
   end
@@ -143,9 +140,9 @@ ActiveRecord::Schema.define(version: 20151127170440) do
 
   create_table "scrap_holds", force: :cascade do |t|
     t.integer  "scrap_id"
-    t.integer  "holdable_id"
-    t.datetime "created_at",  null: false
-    t.datetime "updated_at",  null: false
+    t.integer  "game_state_id"
+    t.datetime "created_at",    null: false
+    t.datetime "updated_at",    null: false
   end
 
   create_table "scrap_options", force: :cascade do |t|
