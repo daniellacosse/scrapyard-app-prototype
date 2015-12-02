@@ -34,9 +34,13 @@ class GamesController < ApplicationController
   def join
      @game = Game.find params["id"]
 
-     if !!GameState.where(player_id: current_player.id, game_id: @game.id).first
+     game_state = GameState.where(
+       player_id: current_player.id, game_id: @game.id
+     ).first
+     
+     if !!game_state
         flash[:error] = "You\'re already in this game!"
-        redirect_to @game
+        redirect_to game_state_path(game_state)
         return
      end
 

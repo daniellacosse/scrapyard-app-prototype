@@ -13,42 +13,38 @@
 
 <!-- RAW MATERIALS -->
 <p id="player-materials">
-   <b>Raw Materials:</b> <%= @game_state[:raw] %>
+   <b>Raw Materials:</b> <%= @game_state[:raw] || 0 %>
 </p>
 
 <!-- SCRAP FORM -->
 <p>
    <b>Take Scrap:</b>
-   <form action="/game-state/<%= @game_state.id %>/draw/scrap" method="put">
+   <form action="/game_states/<%= @game_state.id %>/draw/scrap" method="post">
       <%= token_tag nil %>
       <select name="card_id">
          <option>Choose a scrap</option>
-         <% @scraps do |scrap| %>
+         <% Scrap.all.each do |scrap| %>
             <option value="<%= scrap.id %>"><%= scrap.name %></option>
          <% end %>
       </select>
-      <input type="sumbit">
-         Draw
-      </input>
+      <input type="submit" value="Draw"></input>
    </form>
 </p>
 
 <!-- BLUEPRINT FORM  -->
 <p>
    <b>Take Blueprint:</b>
-   <form action="/game-state/<%= @game_state.id %>/draw/blueprint" method="put">
+   <form action="/game_states/<%= @game_state.id %>/draw/blueprint" method="post">
       <%= token_tag nil %>
       <select id="blueprint-select" name="card_id">
          <option>Choose a blueprint</option>
-         <% @game.available_blueprints.each do |blueprint| %>
+         <% @game_state.game.available_blueprints.each do |blueprint| %>
             <option value="<%= blueprint.id %>">
-               <%= blueprint.name %>
+               <%= blueprint.scrapper_module.name %>
             </option>
          <% end %>
       </select>
-      <input type="sumbit">
-         Draw
-      </input>
+      <input type="submit" value="Draw"></input>
    </form>
 </p>
 
@@ -74,7 +70,7 @@
 
 <script>
    var gameSource = new EventSource(
-      "/game/" + <%= @game_state.id %> + ".json"
+      "/games/" + <%= @game_state.id %> + ".json"
    );
    var stateSource = new EventSource(
       "/game_states/" + <%= @game_state.id %> + ".json"

@@ -152,6 +152,9 @@ modules.each do |mod_data|
 	blueprint_data = blueprints.find { |b| b["name"] == mod.name }
 	blueprint = Blueprint.create scrapper_module_id: mod.id
 
+	mod.blueprint_id = blueprint.id
+	mod.save
+
 	5.times do |i|
 		req_key, req_val_key = "rq#{i+1}", "rq#{i+1}_val"
 

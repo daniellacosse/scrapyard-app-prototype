@@ -9,7 +9,7 @@ class GameStatesController < ApplicationController
 
 	def show
 		respond_to do |format|
-			format.html { render @game_state, locals: { scraps: Scrap.all } }
+			format.html { render :show, locals: { scraps: Scrap.all } }
 
 			format.json do
 				response.headers["Content-Type"] = "text/event-stream"
@@ -33,7 +33,7 @@ class GameStatesController < ApplicationController
 		end
 	end
 
-	# PUT /game_states/:id/draw/:card_type.json
+	# POST /game_states/:id/draw/:card_type.json
    def draw
 		card_id, card_type = response.body.card_id, params[:card_type]
 
@@ -49,7 +49,7 @@ class GameStatesController < ApplicationController
 		handle_response @game_state.save
    end
 
-	# PUT /game_states/:id/sell/:scrap_hold_id.json
+	# POST /game_states/:id/sell/:scrap_hold_id.json
 	def sell
 		@scrap_hold = ScrapHold.find param[:scrap_hold_id]
 		@game_state[:raw] += @scrap_hold.scrap[:value]
@@ -59,7 +59,7 @@ class GameStatesController < ApplicationController
 		handle_response success
 	end
 
-   # PUT /game_states/:id/trade.json
+   # POST /game_states/:id/trade.json
 
    # body:
    # => offer
@@ -73,7 +73,7 @@ class GameStatesController < ApplicationController
 		handle_response success { publish_state_data @trader_state }
    end
 
-   # PUT /game_states/:id/build/:blueprint_id.json
+   # POST /game_states/:id/build/:blueprint_id.json
    def build
       # check if player has blueprint
       # check if player has resources
@@ -83,7 +83,7 @@ class GameStatesController < ApplicationController
    end
 
 
-	# PUT /game_states/:id/turn/end.json
+	# POST /game_states/:id/turn/end.json
 	def end_turn
 		@next_player_state = @game_state.siblings.select do |player|
 			player_number == @game_state.player_number + 1

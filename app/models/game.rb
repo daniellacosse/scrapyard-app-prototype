@@ -3,10 +3,8 @@ class Game < ActiveRecord::Base
 	has_many :players, through: :game_states
 
 	def available_blueprints
-		game_states
-			.collect(&:cards)
-			.flatten
-			.select { |card| card[:holdable_type] == "blueprint" }
-			.collect(&:id)
+		taken_blueprints = game_states.collect(&:blueprints).flatten
+
+		Blueprint.all - taken_blueprints
 	end
 end

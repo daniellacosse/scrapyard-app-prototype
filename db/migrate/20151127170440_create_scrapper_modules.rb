@@ -1,6 +1,8 @@
 class CreateScrapperModules < ActiveRecord::Migration
   def change
     create_table :scrapper_modules do |t|
+      t.integer :blueprint_id
+
       t.string :name
       t.string :mod_type
       t.string :armor

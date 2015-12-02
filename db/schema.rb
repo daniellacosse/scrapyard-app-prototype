@@ -154,6 +154,7 @@ ActiveRecord::Schema.define(version: 20151127170440) do
   end
 
   create_table "scrapper_modules", force: :cascade do |t|
+    t.integer  "blueprint_id"
     t.string   "name"
     t.string   "mod_type"
     t.string   "armor"
