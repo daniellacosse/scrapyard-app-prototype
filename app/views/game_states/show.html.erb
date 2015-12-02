@@ -92,7 +92,9 @@
 
       renderTurnStatus(data.is_my_turn);
       renderRawMaterials(data.raw);
-      renderHeldCards(data.cards);
+      renderHeldScraps(data.scraps);
+      renderHeldBlueprints(data.blueprints);
+      renderHeldModules(data.scrapper_modules);
    });
 
    function renderBlueprintSelect(blueprints) {
@@ -112,11 +114,11 @@
       }
    }
 
-   function renderHeldCards(cards) {
-      if (cards && cards.blueprint) {
+   function renderHeldBlueprints(blueprints) {
+      if (blueprints && blueprints.length) {
          var heldBlueprintsHTML = "";
 
-         for (var blueprint of cards.blueprint) {
+         for (var blueprint of cards.blueprints) {
             heldBlueprintsHTML += "<li>" + blueprint.name + "</li>";
 
             // link to trade
@@ -125,11 +127,13 @@
 
          $("#held-blueprints").html(heldBlueprintsHTML);
       } else $("#held-blueprints").html("No Held Blueprints");
+   }
 
-      if (cards && cards.scrap) {
+   function renderHeldScraps(scraps) {
+      if (scraps && scraps.length) {
          var heldScrapsHTML = "";
 
-         for (var scrap of cards.scrap) {
+         for (var scrap of scraps) {
             heldScrapsHTML += "<li>" + scrap.name + "</li>";
 
             // link to Use
@@ -139,8 +143,10 @@
 
          $("#held-scraps").html(heldScrapsHTML);
       } else $("#held-scraps").html("No Held Scraps");
+   }
 
-      if (cards && cards.scrapper_module) {
+   function renderHeldBlueprints(modules) {
+      if (modules && modules.length) {
          var heldModulesHTML = "";
 
          for (var scrapper_module of cards.scrapper_module) {

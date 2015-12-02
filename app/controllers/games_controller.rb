@@ -2,8 +2,8 @@ require "json"
 
 class GamesController < ApplicationController
   include ActionController::Live
-  before_action :set_game, only: [:show, :edit, :update, :destroy]
   before_action :authenticate_player!
+  before_action :set_game, only: [:show, :edit, :update, :destroy]
   # GET /games
   # GET /games.json
   def index
@@ -47,15 +47,22 @@ class GamesController < ApplicationController
      end
 
      respond_to do |format|
-       @state = GameState.new(player_id: current_player.id, game_id: @game.id)
+       @game_state = GameState.new(
+         player_id: current_player.id, game_id: @game.id
+       )
 
-       if @state.save
+       if @game_state.save
           publish_game_data @game
 
-          format.html { redirect_to @state, notice: "Joined Game!" }
+          format.html do
+             redirect_to game_state_path(@game_state), notice: "Joined Game!"
+          end
+
           format.json { render :show, status: :created, location: @game }
        else
-          format.json { render json: @state.errors, status: :unprocessable_entity }
+          format.json do
+             render json: @game_state.errors, status: :unprocessable_entity
+          end
        end
      end
   end
@@ -77,7 +84,7 @@ class GamesController < ApplicationController
 
     respond_to do |format|
       if @game.save
-        format.html { redirect_to @game, notice: "Game was successfully created." }
+        format.html { redirect_to games_path, notice: "Game was successfully created." }
         format.json { render :show, status: :created, location: @game }
       else
         format.html { render :new }

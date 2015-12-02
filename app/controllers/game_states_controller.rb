@@ -1,6 +1,6 @@
 require "json"
 
-class GameStatesController < ActionController::Base
+class GameStatesController < ApplicationController
 	include ActionController::Live
 	before_action :authenticate_player!
 	before_action :set_state, only: [
@@ -38,10 +38,10 @@ class GameStatesController < ActionController::Base
 		card_id, card_type = response.body.card_id, params[:card_type]
 
 		if card_type == "scrap"
-			@game_state.cards << ScrapHold.create(scrap_id: card_id)
+			@game_state.scrap_holds << ScrapHold.create(scrap_id: card_id)
 			# TODO: check to see if any player needs that & notify them
 		elsif card_type == "blueprint"
-			@game_state.cards << BlueprintHold.create(blueprint_id: card_id)
+			@game_state.blueprint_holds << BlueprintHold.create(blueprint_id: card_id)
 		else
 	      flash[:error] = "Card type drawn (#{card_type}) invalid!";
 		end
@@ -112,7 +112,9 @@ class GameStatesController < ActionController::Base
 	  r.publish(
 		  "game#{data.game.id}.player#{data.player.id}",
 		  JSON.dump(
-			  cards: data.cards.group_by("holdable_type"),
+			  scraps: data.scraps,
+			  blueprints: data.blueprints,
+			  scrapper_modules: data.scrapper_modules,
 			  raw: data[:raw],
 			  is_my_turn: data[:is_my_turn]
 		  )
