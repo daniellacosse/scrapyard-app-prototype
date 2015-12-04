@@ -11,15 +11,10 @@
   <% end %>
 </p>
 
-<!-- RAW MATERIALS -->
-<p id="player-materials">
-   <b>Raw Materials:</b> <%= @game_state[:raw] || 0 %>
-</p>
-
 <!-- SCRAP FORM -->
 <p>
    <b>Take Scrap:</b>
-   <form action="/game_states/<%= @game_state.id %>/draw/scrap" method="post">
+   <%= form_tag("/game_states/#{@game_state.id}/draw/scrap", remote: true) do %>
       <%= token_tag nil %>
       <select name="card_id">
          <option>Choose a scrap</option>
@@ -28,13 +23,13 @@
          <% end %>
       </select>
       <input type="submit" value="Draw"></input>
-   </form>
+   <% end %>
 </p>
 
 <!-- BLUEPRINT FORM  -->
 <p>
    <b>Take Blueprint:</b>
-   <form action="/game_states/<%= @game_state.id %>/draw/blueprint" method="post">
+   <%= form_tag("/game_states/#{@game_state.id}/draw/blueprint", remote: true) do %>
       <%= token_tag nil %>
       <select id="blueprint-select" name="card_id">
          <option>Choose a blueprint</option>
@@ -45,49 +40,73 @@
          <% end %>
       </select>
       <input type="submit" value="Draw"></input>
-   </form>
+   <% end %>
+</p>
+
+<!-- RAW MATERIALS -->
+<p id="player-materials" style="color: red;">
+   <b>Raw Materials:</b> <%= @game_state[:raw] || 0 %>
 </p>
 
 <!-- HELD SCRAPS -->
-<p>
+<p style="color: gray;">
    <b>Held Scraps:</b>
-   <ul id="held-scraps">Loading...</ul>
+   <ul id="held-scraps" style="color: gray;">
+      <% @game_state.scrap_holds.each do |hold| %>
+         <li>
+            <%= hold.scrap.name %> |
+            <%= link_to 'Use' %> |
+            <%= link_to 'Sell' %> |
+            <%= link_to 'Trade' %>
+         </li>
+      <% end %>
+   </ul>
 <p>
 
 <!-- HELD BLUEPRINTS -->
-<p>
+<p style="color: blue;">
    <b>Held Blueprints:</b>
-   <ul id="held-blueprints">Loading...</ul>
+   <ul id="held-blueprints" style="color: blue;">
+      <% @game_state.blueprint_holds.each do |hold| %>
+         <li>
+            <%= hold.blueprint.name %> |
+            <%= link_to 'Build' %> |
+            <%= link_to 'Trade' %> |
+            <%= link_to 'Discard' %>
+         </li>
+      <% end %>
+   </ul>
 </p>
 
 <!-- HELD SCRAPPER MODULES -->
-<p>
+<p style="color: green;">
    <b>Held Scrapper Modules:</b>
-   <ul id="held-modules">Loading...</ul>
+   <ul id="held-modules">
+      <% @game_state.module_holds.each do |hold| %>
+         <li>
+            <%= hold.scrapper_modules.name %> |
+            <%= link_to 'Trade' %>
+         </li>
+      <% end %>
+   </ul>
 </p>
 
 <%= link_to 'Forfeit' %>
 
 <script>
-   var gameSource = new EventSource(
-      "/games/" + <%= @game_state.id %> + ".json"
-   );
    var stateSource = new EventSource(
       "/game_states/" + <%= @game_state.id %> + ".json"
    );
 
-   gameSource.addEventListener("update", function(event) {
+   stateSource.addEventListener("update", function(event) {
       var data = JSON.parse(event.data);
 
       renderPlayers(data.players);
       renderBlueprintSelect(data.available_blueprints);
-   });
-
-   stateSource.addEventListener("update", function* (event) {
-      var data = JSON.parse(event.data);
 
       renderTurnStatus(data.is_my_turn);
       renderRawMaterials(data.raw);
+
       renderHeldScraps(data.scraps);
       renderHeldBlueprints(data.blueprints);
       renderHeldModules(data.scrapper_modules);
@@ -98,6 +117,8 @@
          var blueprintFormHTML = "<option>Choose a blueprint</option>";
 
          for (var blueprint of blueprints) {
+            blueprint = JSON.parse(blueprint);
+
             blueprintFormHTML +=
                "<option value='" +
                blueprint.id +
@@ -110,45 +131,55 @@
       }
    }
 
-   function renderHeldBlueprints(blueprints) {
-      if (blueprints && blueprints.length) {
-         var heldBlueprintsHTML = "";
-
-         for (var blueprint of cards.blueprints) {
-            heldBlueprintsHTML += "<li>" + blueprint.name + "</li>";
-
-            // link to trade
-            // link to discard
-         }
-
-         $("#held-blueprints").html(heldBlueprintsHTML);
-      } else $("#held-blueprints").html("No Held Blueprints");
-   }
-
    function renderHeldScraps(scraps) {
       if (scraps && scraps.length) {
          var heldScrapsHTML = "";
 
          for (var scrap of scraps) {
-            heldScrapsHTML += "<li>" + scrap.name + "</li>";
+            scrap = JSON.parse(scrap);
 
-            // link to Use
-            // link to sell
-            // link to trade
+            heldScrapsHTML += "<li>" +
+               scrap.name +
+               ` | <%= link_to 'Use' %>` +
+               ` | <%= link_to 'Sell' %>` +
+               ` | <%= link_to 'Trade' %>` +
+               "</li>"
          }
 
          $("#held-scraps").html(heldScrapsHTML);
       } else $("#held-scraps").html("No Held Scraps");
    }
 
-   function renderHeldBlueprints(modules) {
+   function renderHeldBlueprints(blueprints) {
+      if (blueprints && blueprints.length) {
+         var heldBlueprintsHTML = "";
+
+         for (var blueprint of blueprints) {
+            blueprint = JSON.parse(blueprint);
+
+            heldBlueprintsHTML += "<li>" +
+               blueprint.name +
+               ` | <%= link_to 'Build' %>` +
+               ` | <%= link_to 'Discard' %>` +
+               ` | <%= link_to 'Trade' %>` +
+               "</li>"
+         }
+
+         $("#held-blueprints").html(heldBlueprintsHTML);
+      } else $("#held-blueprints").html("No Held Blueprints");
+   }
+
+   function renderHeldModules(modules) {
       if (modules && modules.length) {
          var heldModulesHTML = "";
 
-         for (var scrapper_module of cards.scrapper_module) {
-            heldModulesHTML += "<li>" + scrapper_module.name + "</li>";
+         for (var scrapper_module of modules) {
+            scrapper_module = JSON.parse(scrapper_module);
 
-            // link to trade
+            heldModulesHTML += "<li>" +
+               scrapper_module.name +
+               ` | <%= link_to 'Trade' %>` +
+               "</li>"
          }
 
          $("#held-modules").html(heldModulesHTML);

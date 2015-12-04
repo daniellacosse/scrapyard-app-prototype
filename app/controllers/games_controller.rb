@@ -37,7 +37,7 @@ class GamesController < ApplicationController
      game_state = GameState.where(
        player_id: current_player.id, game_id: @game.id
      ).first
-     
+
      if !!game_state
         flash[:error] = "You\'re already in this game!"
         redirect_to game_state_path(game_state)
@@ -56,7 +56,7 @@ class GamesController < ApplicationController
        )
 
        if @game_state.save
-          publish_game_data @game
+          publish_state_data @game_state
 
           format.html do
              redirect_to game_state_path(@game_state), notice: "Joined Game!"
@@ -132,14 +132,18 @@ class GamesController < ApplicationController
       params.require(:game).permit(:guid)
     end
 
-    def publish_game_data(data)
-      r = Redis.new # url: ENV["REDIS_URL"] || "redis://127.0.0.1:6379/0"
-      r.publish(
-         "game#{data.id}",
-         JSON.dump(
-            players: data.players.collect(&:email),
-            available_blueprints: data.available_blueprints
-         )
-      )
-    end
+    def publish_state_data(data)
+	  r = Redis.new # url: ENV["REDIS_URL"] || "redis://127.0.0.1:6379/0"
+	  r.publish(
+		  "stream#{data.id}",
+		  JSON.dump(
+				scraps: data.scraps.to_a.map(&:to_json),
+				blueprints: data.blueprints.to_a.map(&:to_json),
+				available_blueprints: data.game.available_blueprints.to_a.map(&:to_json),
+				scrapper_modules: data.scrapper_modules.to_a.map(&:to_json),
+				raw: data[:raw],
+				is_my_turn: data[:is_my_turn]
+		  )
+	  )
+	end
 end

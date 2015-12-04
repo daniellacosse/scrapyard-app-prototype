@@ -15,7 +15,7 @@ class GameStatesController < ApplicationController
 				response.headers["Content-Type"] = "text/event-stream"
 
 				r = Redis.new # url: ENV["REDIS_URL"] || "redis://127.0.0.1:6379/0"
-				sub_string = "game#{@game_state.game.id}.player#{@game_state.player.id}"
+				sub_string = "stream#{@game_state.id}"
 
 				begin
 					r.subscribe sub_string do |on|
@@ -33,9 +33,9 @@ class GameStatesController < ApplicationController
 		end
 	end
 
-	# POST /game_states/:id/draw/:card_type.json
+	# POST /game_states/:id/draw/:card_type
    def draw
-		card_id, card_type = response.body.card_id, params[:card_type]
+		card_id, card_type = params[:card_id], params[:card_type]
 
 		if card_type == "scrap"
 			@game_state.scrap_holds << ScrapHold.create(scrap_id: card_id)
@@ -49,7 +49,7 @@ class GameStatesController < ApplicationController
 		handle_response @game_state.save
    end
 
-	# POST /game_states/:id/sell/:scrap_hold_id.json
+	# POST /game_states/:id/sell/:scrap_hold_id
 	def sell
 		@scrap_hold = ScrapHold.find param[:scrap_hold_id]
 		@game_state[:raw] += @scrap_hold.scrap[:value]
@@ -59,7 +59,7 @@ class GameStatesController < ApplicationController
 		handle_response success
 	end
 
-   # POST /game_states/:id/trade.json
+   # POST /game_states/:id/trade
 
    # body:
    # => offer
@@ -73,7 +73,7 @@ class GameStatesController < ApplicationController
 		handle_response success { publish_state_data @trader_state }
    end
 
-   # POST /game_states/:id/build/:blueprint_id.json
+   # POST /game_states/:id/build/:blueprint_id
    def build
       # check if player has blueprint
       # check if player has resources
@@ -83,7 +83,7 @@ class GameStatesController < ApplicationController
    end
 
 
-	# POST /game_states/:id/turn/end.json
+	# POST /game_states/:id/turn/end
 	def end_turn
 		@next_player_state = @game_state.siblings.select do |player|
 			player_number == @game_state.player_number + 1
@@ -110,13 +110,14 @@ class GameStatesController < ApplicationController
 	def publish_state_data(data)
 	  r = Redis.new # url: ENV["REDIS_URL"] || "redis://127.0.0.1:6379/0"
 	  r.publish(
-		  "game#{data.game.id}.player#{data.player.id}",
+		  "stream#{data.id}",
 		  JSON.dump(
-			  scraps: data.scraps,
-			  blueprints: data.blueprints,
-			  scrapper_modules: data.scrapper_modules,
-			  raw: data[:raw],
-			  is_my_turn: data[:is_my_turn]
+				scraps: data.scraps.to_a.map(&:to_json),
+				blueprints: data.blueprints.to_a.map(&:to_json),
+				available_blueprints: data.game.available_blueprints.to_a.map(&:to_json),
+				scrapper_modules: data.scrapper_modules.to_a.map(&:to_json),
+				raw: data[:raw],
+				is_my_turn: data[:is_my_turn]
 		  )
 	  )
 	end

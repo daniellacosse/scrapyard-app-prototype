@@ -46,4 +46,12 @@ class Blueprint < ActiveRecord::Base
 	def cost
 		rank * Math.log(requirements.map(&:difficulty).sum)
 	end
+
+	def name
+		scrapper_module.name
+	end
+
+	def to_json
+		{ name: name, id: id }.to_json
+	end
 end
