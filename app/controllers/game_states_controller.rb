@@ -1,8 +1,16 @@
 require "json"
 
+ALL_STATES = [
+	"raw", "players", "scraps", "blueprints",
+	"available_blueprints", "scrapper_modules"
+]
+
 class GameStatesController < ApplicationController
 	include ActionController::Live
 	before_action :authenticate_player!
+	before_action :ensure_game_started, only: [
+		:draw, :trade, :build, :end_turn
+	]
 	before_action :set_state, only: [
 		:show, :edit, :update, :destroy, :draw, :trade, :build, :end_turn
 	]
@@ -82,6 +90,19 @@ class GameStatesController < ApplicationController
 		handle_response success
    end
 
+	def
+
+
+	# POST /game_states/:id/ready
+	def ready
+		@game_state.is_ready = true
+
+		transaction do
+			success = @game_state.save && @game_state.game.start_if_all_ready
+		end
+
+		handle_response success
+	end
 
 	# POST /game_states/:id/turn/end
 	def end_turn
@@ -99,7 +120,7 @@ class GameStatesController < ApplicationController
 
 		transaction { success = @game_state.save && @next_player_state.save }
 
-		handle_response success { publish_state_data @next_player_state }
+		handle_response success { publish_data @next_player_state, ALL_STATES }
 	end
 
 	private
@@ -107,24 +128,9 @@ class GameStatesController < ApplicationController
 		@game_state = GameState.find params[:id]
 	end
 
-	def publish_state_data(data)
-	  r = Redis.new # url: ENV["REDIS_URL"] || "redis://127.0.0.1:6379/0"
-	  r.publish(
-		  "stream#{data.id}",
-		  JSON.dump(
-				scraps: data.scraps.to_a.map(&:to_json),
-				blueprints: data.blueprints.to_a.map(&:to_json),
-				available_blueprints: data.game.available_blueprints.to_a.map(&:to_json),
-				scrapper_modules: data.scrapper_modules.to_a.map(&:to_json),
-				raw: data[:raw],
-				is_my_turn: data[:is_my_turn]
-		  )
-	  )
-	end
-
-	def handle_response(no_error, &block)
+	def handle_response(no_error, states = ALL_STATES, &block)
 		if no_error
-			publish_state_data @game_state
+			publish_data @game_state, states
 			block
 
 			render json: @game_state, status: :updated

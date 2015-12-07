@@ -63,6 +63,7 @@ ActiveRecord::Schema.define(version: 20151127170440) do
     t.integer  "player_number"
     t.integer  "game_id"
     t.integer  "raw"
+    t.boolean  "is_ready"
     t.boolean  "is_my_turn"
     t.datetime "created_at",    null: false
     t.datetime "updated_at",    null: false
@@ -70,8 +71,9 @@ ActiveRecord::Schema.define(version: 20151127170440) do
 
   create_table "games", force: :cascade do |t|
     t.integer  "guid"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.boolean  "has_started", default: false
+    t.datetime "created_at",                  null: false
+    t.datetime "updated_at",                  null: false
   end
 
   create_table "module_effects", force: :cascade do |t|

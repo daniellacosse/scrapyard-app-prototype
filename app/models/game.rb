@@ -7,4 +7,10 @@ class Game < ActiveRecord::Base
 
 		Blueprint.all - taken_blueprints
 	end
+
+	def start_if_all_ready
+		has_started = true if game_states.collect(&:is_ready).all?
+
+		return save
+	end
 end

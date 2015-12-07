@@ -5,6 +5,7 @@ class CreateGameStates < ActiveRecord::Migration
       t.integer :player_number
       t.integer :game_id
       t.integer :raw
+      t.boolean :is_ready
       t.boolean :is_my_turn
 
       t.timestamps null: false

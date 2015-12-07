@@ -10,25 +10,25 @@ class GamesController < ApplicationController
     @games = Game.all
   end
 
-  # GET /games/1
-  # GET /games/1.json
-  def show
-     response.headers["Content-Type"] = "text/event-stream"
-
-     r = Redis.new # url: ENV["REDIS_URL"] || "redis://127.0.0.1:6379/0"
-     begin
-       r.subscribe("game#{@game.id}") do |on|
-          on.message do |event, data|
-             response.stream.write "event: update\n"
-             response.stream.write "data: #{data}\n\n"
-          end
-       end
-     rescue IOError
-     ensure
-        r.quit
-        response.stream.close
-     end
-   end
+  # # GET /games/1
+  # # GET /games/1.json
+  # def show
+  #    response.headers["Content-Type"] = "text/event-stream"
+  #
+  #    r = Redis.new # url: ENV["REDIS_URL"] || "redis://127.0.0.1:6379/0"
+  #    begin
+  #      r.subscribe("game#{@game.id}") do |on|
+  #         on.message do |event, data|
+  #            response.stream.write "event: update\n"
+  #            response.stream.write "data: #{data}\n\n"
+  #         end
+  #      end
+  #    rescue IOError
+  #    ensure
+  #       r.quit
+  #       response.stream.close
+  #    end
+  #  end
 
   # POST /games/1/join
   def join
@@ -40,7 +40,7 @@ class GamesController < ApplicationController
 
      if !!game_state
         flash[:error] = "You\'re already in this game!"
-        redirect_to game_state_path(game_state)
+        redirect_to game_state_url(game_state)
         return
      end
 
@@ -50,13 +50,13 @@ class GamesController < ApplicationController
         return
      end
 
-     respond_to do |format|
-       @game_state = GameState.new(
-         player_id: current_player.id, game_id: @game.id
-       )
+     @game_state = GameState.new(
+        player_id: current_player.id, game_id: @game.id
+     )
 
+     respond_to do |format|
        if @game_state.save
-          publish_state_data @game_state
+          publish_data @game_state, [ "players" ]
 
           format.html do
              redirect_to game_state_path(@game_state), notice: "Joined Game!"
@@ -131,19 +131,4 @@ class GamesController < ApplicationController
     def game_params
       params.require(:game).permit(:guid)
     end
-
-    def publish_state_data(data)
-	  r = Redis.new # url: ENV["REDIS_URL"] || "redis://127.0.0.1:6379/0"
-	  r.publish(
-		  "stream#{data.id}",
-		  JSON.dump(
-				scraps: data.scraps.to_a.map(&:to_json),
-				blueprints: data.blueprints.to_a.map(&:to_json),
-				available_blueprints: data.game.available_blueprints.to_a.map(&:to_json),
-				scrapper_modules: data.scrapper_modules.to_a.map(&:to_json),
-				raw: data[:raw],
-				is_my_turn: data[:is_my_turn]
-		  )
-	  )
-	end
 end
