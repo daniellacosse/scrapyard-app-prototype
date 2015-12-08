@@ -14,4 +14,15 @@ class GameState < ActiveRecord::Base
 	def siblings
 		game.game_states
 	end
+
+	def set_ready
+		success = false
+
+		transaction do
+			success = update(is_ready: true)
+			success &= game.start_if_all_ready
+		end
+
+		success
+	end
 end

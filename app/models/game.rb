@@ -9,8 +9,8 @@ class Game < ActiveRecord::Base
 	end
 
 	def start_if_all_ready
-		has_started = true if game_states.collect(&:is_ready).all?
+		success = update(has_started: true) if game_states.collect(&:is_ready).all?
 
-		return save
+		return success
 	end
 end

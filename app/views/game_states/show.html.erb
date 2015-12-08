@@ -13,7 +13,7 @@
     <% if player_state.player.id == current_player.id %>
       <b>(me)</b>
       <% if player_state.is_my_turn %>
-         <%= button_to 'End Turn', end_turn_path(@game_state) %>
+         <%= button_to 'End Turn', end_turn_path(@game_state), remote: true %>
       <% end %>
     <% end %>
     <% unless @game_state.game.has_started %>
@@ -21,7 +21,7 @@
          <span style="color: green;">Ready!</span>
       <% end %>
       <% if player_state.player.id == current_player.id && !player_state.is_ready %>
-         <%= button_to 'Ready', ready_path(@game_state) %>
+         <%= button_to 'Ready', ready_path(@game_state), remote: true %>
       <% end %>
     <% end %>
   <% end %>
@@ -71,14 +71,17 @@
       <p style="color: gray;">
          <b>Held Scraps:</b>
          <ul id="held-scraps" style="color: gray;">
+           <% if @game_state.scrap_holds.count > 0 %>
             <% @game_state.scrap_holds.each do |hold| %>
                <li>
-                  <%= hold.scrap.name %> |
-                  <%= button_to 'Use' %> |
-                  <%= button_to 'Sell', sell_path(hold), remote: true %> |
-                  <%= button_to 'Trade' %>
+                  <%= hold.scrap.name %>
+                  <%= button_to 'Sell', sell_path(@game_state, hold), remote: true %> |
+                  <%= button_to 'Discard' %>
                </li>
             <% end %>
+          <% else %>
+            No Held Scraps
+          <% end %>
          </ul>
       <p>
 
@@ -86,27 +89,31 @@
       <p style="color: blue;">
          <b>Held Blueprints:</b>
          <ul id="held-blueprints" style="color: blue;">
+           <% if @game_state.blueprint_holds.count > 0 %>
             <% @game_state.blueprint_holds.each do |hold| %>
                <li>
-                  <%= hold.blueprint.name %> |
+                  <%= hold.blueprint.name %>
                   <%= button_to 'Build' %> |
-                  <%= button_to 'Trade' %> |
                   <%= button_to 'Discard' %>
                </li>
             <% end %>
+          <% else %>
+            No Held Blueprints
+          <% end %>
          </ul>
       </p>
 
       <!-- HELD SCRAPPER MODULES -->
       <p style="color: green;">
-         <b>Held Scrapper Modules:</b>
+         <b>Built Scrapper Modules:</b>
          <ul id="held-modules">
+           <% if @game_state.module_holds.count > 0 %>
             <% @game_state.module_holds.each do |hold| %>
-               <li>
-                  <%= hold.scrapper_modules.name %> |
-                  <%= button_to 'Trade' %>
-               </li>
+               <li><%= hold.scrapper_modules.name %></li>
             <% end %>
+          <% else %>
+            No Built Modules
+          <% end %>
          </ul>
       </p>
    <% end %>
@@ -130,7 +137,7 @@
          renderRawMaterials(data.raw);
          renderHeldScraps(data.scraps);
          renderHeldBlueprints(data.blueprints);
-         renderHeldModules(data.scrapper_modules);
+         renderBuiltModules(data.scrapper_modules);
       }
    });
 
@@ -154,84 +161,91 @@
    }
 
    function renderHeldScraps(scraps) {
-      if (scraps && scraps.length) {
+      if (scraps) {
          var heldScrapsHTML = "";
 
-         for (var scrap of scraps) {
-            scrap = JSON.parse(scrap);
+         if (scraps.length) {
+           for (var scrap of scraps) {
+              scrap = JSON.parse(scrap);
 
-            heldScrapsHTML += "<li>" +
-               scrap.name +
-               ` | <%= button_to 'Use' %>` +
-               ` | <%= button_to 'Sell' %>` +
-               ` | <%= button_to 'Trade' %>` +
-               "</li>"
-         }
+              heldScrapsHTML += "<li>" +
+                 scrap.name +
+                 ` <form class="button_to" method="post" action="/game_states/<%= @game_state.id %>/sell/` +
+                 scrap.id +
+                 `" data-remote="true"><input type="submit" value="Sell"><%= token_tag nil %></form>|` +
+                 ` <%= button_to 'Discard' %>` +
+                 "</li>"
+           }
+         } else heldScrapsHTML = "No Held Scraps";
 
          $("#held-scraps").html(heldScrapsHTML);
-      } else $("#held-scraps").html("No Held Scraps");
+      }
    }
 
    function renderHeldBlueprints(blueprints) {
-      if (blueprints && blueprints.length) {
+      if (blueprints) {
          var heldBlueprintsHTML = "";
 
-         for (var blueprint of blueprints) {
-            blueprint = JSON.parse(blueprint);
+         if (blueprints.length) {
+           for (var blueprint of blueprints) {
+              blueprint = JSON.parse(blueprint);
 
-            heldBlueprintsHTML += "<li>" +
-               blueprint.name +
-               ` | <%= button_to 'Build' %>` +
-               ` | <%= button_to 'Discard' %>` +
-               ` | <%= button_to 'Trade' %>` +
-               "</li>"
-         }
+              heldBlueprintsHTML += "<li>" +
+                 blueprint.name +
+                 ` <%= button_to 'Build' %> |` +
+                 ` <%= button_to 'Discard' %>` +
+                 "</li>"
+           }
+         } else heldBlueprintsHTML = "No Held Blueprints";
+
 
          $("#held-blueprints").html(heldBlueprintsHTML);
-      } else $("#held-blueprints").html("No Held Blueprints");
+      }
    }
 
-   function renderHeldModules(modules) {
-      if (modules && modules.length) {
+   function renderBuiltModules(modules) {
+      if (modules) {
          var heldModulesHTML = "";
+         if (modules.length) {
 
-         for (var scrapper_module of modules) {
-            scrapper_module = JSON.parse(scrapper_module);
+           for (var scrapperModule of modules) {
+              scrapperModule = JSON.parse(scrapperModule);
 
-            heldModulesHTML += "<li>" +
-               scrapper_module.name +
-               ` | <%= button_to 'Trade' %>` +
-               "</li>"
-         }
+              heldModulesHTML += "<li>" + scrapperModule.name + "</li>";
+           }
+         } else heldModulesHTML = "No Held Modules";
+
 
          $("#held-modules").html(heldModulesHTML);
-      } else $("#held-modules").html("No Held Modules");
+      }
    }
 
-   function renderPlayers(players, game_started) {
+   function renderPlayers(players, gameStarted) {
       if (players) {
          var playerHTML = "<b>Players:</b>";
 
          for (var player of players) {
+            player = JSON.parse(player);
+
             playerHTML += "<br><span";
-            playerHTML += player.is_my_turn ? " style='color: green;'>" : ">";
+            playerHTML += player.isMyTurn ? " style='color: green;'>" : ">";
             playerHTML += player.email + "</span>";
 
             if (player.id === <%= current_player.id %>) {
                playerHTML += "<b>(me)</b>";
 
-               if (player.is_my_turn) {
-                  playerHTML += "<%= button_to 'End Turn', end_turn_path(@game_state) %>"
+               if (player.isMyTurn) {
+                  playerHTML += `<%= button_to 'End Turn', end_turn_path(@game_state), remote: true %>`
                }
             }
 
-            if (!game_started) {
-               if (player.is_ready) {
+            if (!gameStarted) {
+               if (player.isReady) {
                   playerHTML += "<span style='color: green;'>Ready!</span>";
                }
 
-               if (player.id === <%= current_player.id %> && !player.is_ready) {
-                  playerHTML += "<%= button_to 'Ready', ready_path(@game_state) %>"
+               if (player.id === <%= current_player.id %> && !player.isReady) {
+                  playerHTML += `<%= button_to 'Ready', ready_path(@game_state), remote: true %>`
                }
             }
          }
@@ -242,7 +256,7 @@
 
    function renderRawMaterials(raw) {
       if (raw) {
-         var rawMaterialsHTML = "<b>Raw Materials:</b>" + data.raw;
+         var rawMaterialsHTML = "<b>Raw Materials:</b> " + raw;
 
          $("#player-materials").html(rawMaterialsHTML);
       }
