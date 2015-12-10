@@ -4,22 +4,12 @@ just a rough prototype for playtesting purposes. (not yet stable)
 
 
 TODO (in decreasing priority):
-	sell scrap
-	game start & turn taking mechanism
-		send message @ game_id for player join
-		start game once everyone clicks "ready"
-			mark game as "started"
-				pub to everyone @ game_id that it's started
-			randomly assign turn order
-			add all controls
-			set first player's "is my turn" to true
-				pub to everyone @ game_id who's turn it is
-			cycle through players on end turn w/ message
-				disable/enable buttons based on who's turn it is
+	(break from coding to rebuild & reformat scraps and modules)
+
 	build
 		(lets player pick for each requirement in modal w/ radio buttons)
 
-	(break from coding to rebuild & reformat scraps and modules)
+	flash errors for trying to do stuff when it is & isn't your turn
 
 Nice to haves:
 	tell players that someone drew a scrap they might be interested in?

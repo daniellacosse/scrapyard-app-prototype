@@ -21,13 +21,13 @@ class ApplicationController < ActionController::Base
     items.each do |item|
        case item
        when "players"
-          response[item] = data.game.players.to_a.map do |player|
+          response[item] = data.siblings.to_a.map do |state|
             doc = {}
 
-            doc["id"] = player.id
-            doc["email"] = player.name
-            doc["isReady"] = player.game_state.is_ready
-            doc["isMyTurn"] = player.game_state.is_my_turn
+            doc["id"] = state.player.id
+            doc["email"] = state.player.email
+            doc["isReady"] = state.is_ready
+            doc["isMyTurn"] = state.is_my_turn
 
             doc.to_json
           end

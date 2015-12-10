@@ -49,13 +49,17 @@ class GameStatesController < ApplicationController
     if card_type == "scrap"
       @game_state.scrap_holds << ScrapHold.create(scrap_id: card_id)
       # TODO: check to see if any player needs that & notify them
+      handle_response @game_state.save, [ "scraps" ]
+
     elsif card_type == "blueprint"
       @game_state.blueprint_holds << BlueprintHold.create(blueprint_id: card_id)
+
+      @game_state.siblings.each { |state| publish_data state, ["blueprint", "available_blueprints"] }
+      render json: @game_state, status: :updated
     else
       flash[:error] = "Card type drawn (#{card_type}) invalid!"
     end
 
-    handle_response @game_state.save, ["blueprints", "scraps", "available_blueprints"]
   end
 
   # POST /game_states/:id/sell/:scrap_hold_id
@@ -76,27 +80,43 @@ class GameStatesController < ApplicationController
 
   # POST /game_states/:id/ready
   def ready
-    handle_response @game_state.set_ready, ["players"]
+    all_ready = @game_state.set_ready
+
+    @game_state = GameState.find params[:id]
+
+    if all_ready
+      @game_state.siblings.each { |state| publish_data state, ALL_STATES }
+    else
+      @game_state.siblings.each { |state| publish_data state, [ "players" ] }
+    end
   end
 
   # POST /game_states/:id/turn/end
   def end_turn
-    @next_player_state = @game_state.siblings.find do |player|
-      player_number == @game_state.player_number + 1
+    @next_player_state = @game_state.siblings.find do |state|
+      state.player_number == @game_state.player_number + 1
     end
 
     unless @next_player_state
       @next_player_state = @game_state.siblings.find do |state|
-        state.player_number == 1
+        state.player_number == 0
       end
     end
 
-    @game_state.is_my_turn = false
-    @next_player_state.is_my_turn = true
+    success = @game_state.update(is_my_turn: false) && @next_player_state.update(is_my_turn: true)
 
-    handle_response @game_state.save && @next_player_state.save, ["players"] do
-			publish_data @next_player_state, ["players"]
-		end
+    @game_state = GameState.find params[:id]
+    @next_player_state = GameState.find @next_player_state.id
+
+    @game_state.siblings.each { |state| publish_data state, [ "players" ] }
+  end
+
+  def destroy
+    if @game_state.destroy
+      @game_state.siblings.each { |state| publish_data state, [ "players" ] }
+
+      redirect_to games_url
+    end
   end
 
   private

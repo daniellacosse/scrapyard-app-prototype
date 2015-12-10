@@ -3,262 +3,263 @@
   <%= @game_state.game.guid %>
 </p>
 
-<p id="current-players">
+<p>
   <b>Players:</b>
-  <% @game_state.siblings.each do |player_state| %>
-    <br>
-    <span style="<%= 'color: green;' if player_state.is_my_turn %>">
-      <%= player_state.player.email %>
-    </span>
-    <% if player_state.player.id == current_player.id %>
-      <b>(me)</b>
-      <% if player_state.is_my_turn %>
-         <%= button_to 'End Turn', end_turn_path(@game_state), remote: true %>
-      <% end %>
+  <ul id="current-players">
+    <% @game_state.siblings.each do |player_state| %>
+      <li>
+        <% if player_state.is_my_turn %>
+          <span style="color: green;"><%= player_state.player.email %></span>
+        <% else %>
+          <span><%= player_state.player.email %></span>
+        <% end %>
+        <% if player_state.player.id == current_player.id %>
+          <b> (me)</b>
+          <% if player_state.is_my_turn %>
+            <%= button_to 'End Turn', end_turn_path(@game_state), remote: true %>
+          <% end %>
+        <% end %>
+        <% unless @game_state.game.has_started %>
+          <% if player_state.is_ready %>
+            <span style="color: green;"> Ready!</span>
+          <% end %>
+          <% if player_state.player.id == current_player.id && !player_state.is_ready %>
+            <%= button_to 'Ready', ready_path(@game_state), remote: true %>
+          <% end %>
+        <% end %>
+      </li>
     <% end %>
-    <% unless @game_state.game.has_started %>
-      <% if player_state.is_ready %>
-         <span style="color: green;">Ready!</span>
-      <% end %>
-      <% if player_state.player.id == current_player.id && !player_state.is_ready %>
-         <%= button_to 'Ready', ready_path(@game_state), remote: true %>
-      <% end %>
-    <% end %>
-  <% end %>
+  </ul>
 </p>
 
 <section id="game-state">
-   <% if @game_state.game.has_started %>
+  <% if @game_state.game.has_started %>
+    <!-- SCRAP FORM -->
+    <p>
+      <b>Take Scrap:</b>
+      <%= form_tag("/game_states/#{@game_state.id}/draw/scrap", remote: true) do %>
+      <%= token_tag nil %>
+      <select name="card_id">
+        <option>Choose a scrap</option>
+        <% Scrap.all.each do |scrap| %>
+        <option value="<%= scrap.id %>"><%= scrap.name %></option>
+        <% end %>
+      </select>
+      <input type="submit" value="Draw"></input>
+      <% end %>
+    </p>
 
-      <!-- SCRAP FORM -->
-      <p>
-         <b>Take Scrap:</b>
-         <%= form_tag("/game_states/#{@game_state.id}/draw/scrap", remote: true) do %>
-            <%= token_tag nil %>
-            <select name="card_id">
-               <option>Choose a scrap</option>
-               <% Scrap.all.each do |scrap| %>
-                  <option value="<%= scrap.id %>"><%= scrap.name %></option>
-               <% end %>
-            </select>
-            <input type="submit" value="Draw"></input>
-         <% end %>
-      </p>
+    <!-- BLUEPRINT FORM  -->
+    <p>
+      <b>Take Blueprint:</b>
+      <%= form_tag("/game_states/#{@game_state.id}/draw/blueprint", remote: true) do %>
+      <%= token_tag nil %>
+      <select id="blueprint-select" name="card_id">
+        <option>Choose a blueprint</option>
+        <% @game_state.game.available_blueprints.each do |blueprint| %>
+        <option value="<%= blueprint.id %>">
+          <%= blueprint.scrapper_module.name %>
+        </option>
+        <% end %>
+      </select>
+      <input type="submit" value="Draw"></input>
+      <% end %>
+    </p>
 
-      <!-- BLUEPRINT FORM  -->
-      <p>
-         <b>Take Blueprint:</b>
-         <%= form_tag("/game_states/#{@game_state.id}/draw/blueprint", remote: true) do %>
-            <%= token_tag nil %>
-            <select id="blueprint-select" name="card_id">
-               <option>Choose a blueprint</option>
-               <% @game_state.game.available_blueprints.each do |blueprint| %>
-                  <option value="<%= blueprint.id %>">
-                     <%= blueprint.scrapper_module.name %>
-                  </option>
-               <% end %>
-            </select>
-            <input type="submit" value="Draw"></input>
-         <% end %>
-      </p>
+    <!-- RAW MATERIALS -->
+    <p id="player-materials" style="color: red;">
+      <b>Raw Materials:</b>
+      <%= @game_state[:raw] || 0 %>
+    </p>
 
-      <!-- RAW MATERIALS -->
-      <p id="player-materials" style="color: red;">
-         <b>Raw Materials:</b> <%= @game_state[:raw] || 0 %>
-      </p>
-
-      <!-- HELD SCRAPS -->
-      <p style="color: gray;">
-         <b>Held Scraps:</b>
-         <ul id="held-scraps" style="color: gray;">
-           <% if @game_state.scrap_holds.count > 0 %>
-            <% @game_state.scrap_holds.each do |hold| %>
-               <li>
-                  <%= hold.scrap.name %>
-                  <%= button_to 'Sell', sell_path(@game_state, hold), remote: true %> |
-                  <%= button_to 'Discard' %>
-               </li>
-            <% end %>
-          <% else %>
-            No Held Scraps
+    <!-- HELD SCRAPS -->
+    <p style="color: gray;">
+      <b>Held Scraps:</b>
+      <ul id="held-scraps" style="color: gray;">
+        <% if @game_state.scrap_holds.count > 0 %>
+          <% @game_state.scrap_holds.each do |hold| %>
+          <li>
+            <%= hold.scrap.name %>
+            <%= button_to 'Sell', sell_path(@game_state, hold), remote: true %>
+            |
+            <%= button_to 'Discard', scrap_hold_path(hold), remote: true, data: { confirm: 'Are you sure?' }, method: :delete %>
+          </li>
           <% end %>
-         </ul>
-      <p>
+        <% else %>
+          No Held Scraps
+        <% end %>
+      </ul>
+    <p>
 
       <!-- HELD BLUEPRINTS -->
       <p style="color: blue;">
-         <b>Held Blueprints:</b>
-         <ul id="held-blueprints" style="color: blue;">
-           <% if @game_state.blueprint_holds.count > 0 %>
+        <b>Held Blueprints:</b>
+        <ul id="held-blueprints" style="color: blue;">
+          <% if @game_state.blueprint_holds.count > 0 %>
             <% @game_state.blueprint_holds.each do |hold| %>
-               <li>
-                  <%= hold.blueprint.name %>
-                  <%= button_to 'Build' %> |
-                  <%= button_to 'Discard' %>
-               </li>
+            <li>
+              <%= hold.blueprint.name %>
+              <%= button_to 'Build' %>
+              |
+              <%= button_to 'Discard', blueprint_hold_path(hold), remote: true, data: { confirm: 'Are you sure?' }, method: :delete  %>
+            </li>
             <% end %>
           <% else %>
             No Held Blueprints
           <% end %>
-         </ul>
+        </ul>
       </p>
 
       <!-- HELD SCRAPPER MODULES -->
       <p style="color: green;">
-         <b>Built Scrapper Modules:</b>
-         <ul id="held-modules">
-           <% if @game_state.module_holds.count > 0 %>
+        <b>Built Scrapper Modules:</b>
+        <ul id="held-modules">
+          <% if @game_state.module_holds.count > 0 %>
             <% @game_state.module_holds.each do |hold| %>
-               <li><%= hold.scrapper_modules.name %></li>
+            <li><%= hold.scrapper_modules.name %></li>
             <% end %>
           <% else %>
             No Built Modules
           <% end %>
-         </ul>
+        </ul>
       </p>
-   <% end %>
-</section>
+    <% end %>
+  </section>
 
-<%= link_to 'Leave Game' %>
+  <%= link_to 'Leave Game', game_state_path(@game_state), data: { confirm: 'Are you sure?' }, method: :delete %>
 
-<script>
-   var stateSource = new EventSource(
-      "/game_states/" + <%= @game_state.id %> + ".json"
-   );
+  <script>
+    var stateSource = new EventSource("/game_states/" + <%= @game_state.id %> + ".json");
 
-   stateSource.addEventListener("update", function(event) {
+    stateSource.addEventListener("update", function (event) {
       var data = JSON.parse(event.data);
 
       renderPlayers(data.players, data.started);
 
       if (data.started) {
-         renderBlueprintSelect(data.available_blueprints);
+        if(!$("#game-state").html().match(/\S+/)) renderGameStateScaffold();
+        renderBlueprintSelect(data.available_blueprints);
 
-         renderRawMaterials(data.raw);
-         renderHeldScraps(data.scraps);
-         renderHeldBlueprints(data.blueprints);
-         renderBuiltModules(data.scrapper_modules);
+        renderRawMaterials(data.raw);
+        renderHeldScraps(data.scraps);
+        renderHeldBlueprints(data.blueprints);
+        renderBuiltModules(data.scrapper_modules);
       }
-   });
+    });
 
-   function renderBlueprintSelect(blueprints) {
+    function renderBlueprintSelect(blueprints) {
       if (blueprints && blueprints.length) {
-         var blueprintFormHTML = "<option>Choose a blueprint</option>";
+        var blueprintFormHTML = "<option>Choose a blueprint</option>";
 
-         for (var blueprint of blueprints) {
+        for (var blueprint of blueprints) {
+          blueprint = JSON.parse(blueprint);
+
+          blueprintFormHTML += "<option value='" + blueprint.id + "'>" + blueprint.name + "</option>"
+        }
+
+        $("#blueprint-select").html(blueprintFormHTML);
+      }
+    }
+
+    function renderGameStateScaffold() {
+      $("#game-state").html(
+        `<p><b>Take Scrap:</b><%= form_tag("/game_states/#{@game_state.id}/draw/scrap", remote: true) do %><%= token_tag nil %><select name="card_id"></select><input type="submit" value="Draw"></input><% end %></p><p><b>Take Blueprint:</b><%= form_tag("/game_states/#{@game_state.id}/draw/blueprint", remote: true) do %><%= token_tag nil %><select id="blueprint-select" name="card_id"></select><input type="submit" value="Draw"></input><% end %></p><p style="color: blue;"><b>Held Blueprints:</b><ul id="held-blueprints" style="color: blue;"></ul></p><p style="color: green;"><b>Built Scrapper Modules:</b><ul id="held-modules"></ul></p><p style="color: gray;"><b>Held Scraps:</b><ul id="held-scraps" style="color: gray;"></ul><p>`
+      )
+    }
+
+    function renderHeldScraps(scraps) {
+      if (scraps) {
+        var heldScrapsHTML = "";
+
+        if (scraps.length) {
+          for (var scrap of scraps) {
+            scrap = JSON.parse(scrap);
+
+            heldScrapsHTML += "<li>" + scrap.name + ` <form class="button_to" method="post" action="/game_states/<%= @game_state.id %>/sell/` + scrap.id + `" data-remote="true"><input type="submit" value="Sell"><%= token_tag nil %></form> |` + ` <form class="button_to" method="delete" action="/scrap_holds/` + scrap.id + `" data-remote="true"><input type="submit" value="Discard"><%= token_tag nil %></form>` + "</li>"
+          }
+        } else
+          heldScrapsHTML = "No Held Scraps";
+
+        $("#held-scraps").html(heldScrapsHTML);
+      }
+    }
+
+    function renderHeldBlueprints(blueprints) {
+      if (blueprints) {
+        var heldBlueprintsHTML = "";
+
+        if (blueprints.length) {
+          for (var blueprint of blueprints) {
             blueprint = JSON.parse(blueprint);
 
-            blueprintFormHTML +=
-               "<option value='" +
-               blueprint.id +
-               "'>" +
-               blueprint.name +
-               "</option>"
-         }
+            heldBlueprintsHTML += "<li>" + blueprint.name + ` <%= button_to 'Build' %> |` + ` <form class="button_to" method="delete" action="/blueprint_holds/` + blueprint.id + `" data-remote="true"><input type="submit" value="Discard"><%= token_tag nil %></form>` + "</li>"
+          }
+        } else heldBlueprintsHTML = "No Held Blueprints";
 
-         $("#blueprint-select").html(blueprintFormHTML);
+        $("#held-blueprints").html(heldBlueprintsHTML);
       }
-   }
+    }
 
-   function renderHeldScraps(scraps) {
-      if (scraps) {
-         var heldScrapsHTML = "";
-
-         if (scraps.length) {
-           for (var scrap of scraps) {
-              scrap = JSON.parse(scrap);
-
-              heldScrapsHTML += "<li>" +
-                 scrap.name +
-                 ` <form class="button_to" method="post" action="/game_states/<%= @game_state.id %>/sell/` +
-                 scrap.id +
-                 `" data-remote="true"><input type="submit" value="Sell"><%= token_tag nil %></form>|` +
-                 ` <%= button_to 'Discard' %>` +
-                 "</li>"
-           }
-         } else heldScrapsHTML = "No Held Scraps";
-
-         $("#held-scraps").html(heldScrapsHTML);
-      }
-   }
-
-   function renderHeldBlueprints(blueprints) {
-      if (blueprints) {
-         var heldBlueprintsHTML = "";
-
-         if (blueprints.length) {
-           for (var blueprint of blueprints) {
-              blueprint = JSON.parse(blueprint);
-
-              heldBlueprintsHTML += "<li>" +
-                 blueprint.name +
-                 ` <%= button_to 'Build' %> |` +
-                 ` <%= button_to 'Discard' %>` +
-                 "</li>"
-           }
-         } else heldBlueprintsHTML = "No Held Blueprints";
-
-
-         $("#held-blueprints").html(heldBlueprintsHTML);
-      }
-   }
-
-   function renderBuiltModules(modules) {
+    function renderBuiltModules(modules) {
       if (modules) {
-         var heldModulesHTML = "";
-         if (modules.length) {
+        var heldModulesHTML = "";
+        if (modules.length) {
 
-           for (var scrapperModule of modules) {
-              scrapperModule = JSON.parse(scrapperModule);
+          for (var scrapperModule of modules) {
+            scrapperModule = JSON.parse(scrapperModule);
 
-              heldModulesHTML += "<li>" + scrapperModule.name + "</li>";
-           }
-         } else heldModulesHTML = "No Held Modules";
+            heldModulesHTML += "<li>" + scrapperModule.name + "</li>";
+          }
+        } else
+          heldModulesHTML = "No Held Modules";
 
-
-         $("#held-modules").html(heldModulesHTML);
+        $("#held-modules").html(heldModulesHTML);
       }
-   }
+    }
 
-   function renderPlayers(players, gameStarted) {
+    function renderPlayers(players, gameStarted) {
       if (players) {
-         var playerHTML = "<b>Players:</b>";
+        var playerHTML = "";
 
-         for (var player of players) {
-            player = JSON.parse(player);
+        for (var player of players) {
+          player = JSON.parse(player);
 
-            playerHTML += "<br><span";
-            playerHTML += player.isMyTurn ? " style='color: green;'>" : ">";
-            playerHTML += player.email + "</span>";
+          playerHTML += "<li><span";
+          playerHTML += player.isMyTurn
+            ? " style='color: green;'>"
+            : ">";
+          playerHTML += player.email + "</span>";
 
-            if (player.id === <%= current_player.id %>) {
-               playerHTML += "<b>(me)</b>";
+          if (player.id === <%= current_player.id %>) {
+            playerHTML += "<b> (me)</b>";
 
-               if (player.isMyTurn) {
-                  playerHTML += `<%= button_to 'End Turn', end_turn_path(@game_state), remote: true %>`
-               }
+            if (player.isMyTurn) {
+              playerHTML += `<%= button_to 'End Turn', end_turn_path(@game_state), remote: true %>`
+            }
+          }
+
+          if (!gameStarted) {
+            if (player.isReady) {
+              playerHTML += "<span style='color: green;'> Ready!</span>";
             }
 
-            if (!gameStarted) {
-               if (player.isReady) {
-                  playerHTML += "<span style='color: green;'>Ready!</span>";
-               }
-
-               if (player.id === <%= current_player.id %> && !player.isReady) {
-                  playerHTML += `<%= button_to 'Ready', ready_path(@game_state), remote: true %>`
-               }
+            if (player.id === <%= current_player.id %> && !player.isReady) {
+              playerHTML += `<%= button_to 'Ready', ready_path(@game_state), remote: true %>`
             }
-         }
+          }
 
-         $("#current-players").html(playerHTML);
+          playerHTML += "</li>";
+        }
+
+        $("#current-players").html(playerHTML);
       }
-   }
+    }
 
-   function renderRawMaterials(raw) {
+    function renderRawMaterials(raw) {
       if (raw) {
-         var rawMaterialsHTML = "<b>Raw Materials:</b> " + raw;
+        var rawMaterialsHTML = "<b>Raw Materials:</b> " + raw;
 
-         $("#player-materials").html(rawMaterialsHTML);
+        $("#player-materials").html(rawMaterialsHTML);
       }
-   }
-</script>
+    }
+  </script>

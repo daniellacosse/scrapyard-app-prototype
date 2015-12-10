@@ -9,8 +9,14 @@ class Game < ActiveRecord::Base
 	end
 
 	def start_if_all_ready
-		success = update(has_started: true) if game_states.collect(&:is_ready).all?
+		if game_states.collect(&:is_ready).all?
+			success = update(has_started: true)
 
-		return success
+			success &= game_states.shuffle.each_with_index do |state, i|
+				success &= state.update(player_number: i)
+			end.first.update(is_my_turn: true)
+
+			return success
+		end
 	end
 end

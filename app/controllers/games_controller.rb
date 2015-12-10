@@ -56,7 +56,7 @@ class GamesController < ApplicationController
 
      respond_to do |format|
        if @game_state.save
-          publish_data @game_state, [ "players" ]
+          @game_state.siblings.each { |state| publish_data state, [ "players" ] }
 
           format.html do
              redirect_to game_state_path(@game_state), notice: "Joined Game!"
