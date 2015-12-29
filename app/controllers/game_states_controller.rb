@@ -57,10 +57,24 @@ class GameStatesController < ApplicationController
 
   # PUT /game_states/:id
   def update
+    connection_string = ("a".."z").to_a.shuffle[0,8].join
+
     if params[:is_new_id]
-      # TODO
-    elsif @game_state.stream_id = params[:steam_id]
-      # TODO
+      @game_state.stream_id = params[:stream_id]
+      @game_state.connection_string = connection_string
+    elsif @game_state.stream_id == params[:steam_id] && @game_state.connection_string == params[:connection_string]
+      @game_state.connection_string = connection_string
+    end
+
+    if @game_state.save
+      respond_to do |format|
+        format.html { render :show }
+        format.json do
+          render json: { ok: true, connection_string: connection_string }
+        end
+      end
+    else
+      render json: @game_state.errors, status: :unprocessable_entity
     end
   end
 

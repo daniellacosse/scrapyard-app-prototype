@@ -62,11 +62,13 @@ ActiveRecord::Schema.define(version: 20151127170440) do
     t.integer  "player_id"
     t.integer  "player_number"
     t.integer  "game_id"
-    t.integer  "raw",           default: 0
+    t.integer  "raw",               default: 0
+    t.integer  "stream_id"
+    t.string   "connection_string"
     t.boolean  "is_ready"
     t.boolean  "is_my_turn"
-    t.datetime "created_at",                null: false
-    t.datetime "updated_at",                null: false
+    t.datetime "created_at",                    null: false
+    t.datetime "updated_at",                    null: false
   end
 
   create_table "games", force: :cascade do |t|

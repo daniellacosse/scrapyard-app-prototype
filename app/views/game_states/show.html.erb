@@ -131,6 +131,7 @@
   <script>
     var stateSource = new EventSource("/game_states/" + <%= @game_state.id %> + ".json");
     var streamID = Math.round(Math.random() * 100000);
+    var connectionString;
 
     stateSource.addEventListener("update", function (event) {
       var data = JSON.parse(event.data);
@@ -148,14 +149,31 @@
       }
     });
 
-    $.put("/game_states/" + <%= @game_state.id %> + ".json", {
-      stream_id: streamID,
-      is_new_id: true
+    $.ajax("/game_states/" + <%= @game_state.id %> + ".json", {
+      method: "PUT",
+      data: {
+        stream_id: streamID,
+        is_new_id: true
+      },
+      success: function (data) {
+        console.log(streamID, connectionString);
+        console.log(JSON.stringify(data));
+        connectionString = data.connection_string;
+      }
     });
 
     setInterval(function () {
-      $.put("/game_states/" + <%= @game_state.id %> + ".json", {
-        stream_id: streamID
+      $.ajax("/game_states/" + <%= @game_state.id %> + ".json", {
+        method: "PUT",
+        data: {
+          stream_id: streamID,
+          connection_string: connectionString
+        },
+        success: function (data) {
+          console.log(streamID, connectionString);
+          console.log(JSON.stringify(data));
+          connectionString = data.connection_string;
+        }
       });
     }, 2000);
 
