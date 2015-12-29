@@ -149,6 +149,7 @@
       }
     });
 
+    // monitor connection duplicity
     $.ajax("/game_states/" + <%= @game_state.id %> + ".json", {
       method: "PUT",
       data: {
@@ -156,8 +157,6 @@
         is_new_id: true
       },
       success: function (data) {
-        console.log(streamID, connectionString);
-        console.log(JSON.stringify(data));
         connectionString = data.connection_string;
       }
     });
@@ -170,8 +169,6 @@
           connection_string: connectionString
         },
         success: function (data) {
-          console.log(streamID, connectionString);
-          console.log(JSON.stringify(data));
           connectionString = data.connection_string;
         }
       });

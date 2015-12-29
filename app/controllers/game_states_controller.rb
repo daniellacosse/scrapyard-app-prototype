@@ -91,7 +91,7 @@ class GameStatesController < ApplicationController
     elsif card_type == "blueprint"
       @game_state.blueprint_holds << BlueprintHold.create(blueprint_id: card_id)
 
-      @game_state.siblings.each { |state| publish_data state, ["blueprint", "available_blueprints"] }
+      @game_state.siblings.each { |state| publish_data state, ["blueprints", "available_blueprints"] }
       render json: @game_state, status: :updated
     else
       flash[:error] = "Card type drawn (#{card_type}) invalid!"
