@@ -24,20 +24,43 @@ class GameStatesController < ApplicationController
 
         r = Redis.new # url: ENV["REDIS_URL"] || "redis://127.0.0.1:6379/0"
         sub_string = "stream#{@game_state.id}"
+        @last_active = Time.zone.now
 
         begin
-          r.subscribe sub_string do |on|
+          r.subscribe sub_string, "heartbeat" do |on|
+            puts "#{current_player.email} Connected!"
+
             on.message do |_event, data|
+              current_state = GameState.find params[:id]
+              idle_time = (Time.zone.now - current_state.updated_at).to_i
+              r.unsubscribe if idle_time > 3.seconds
+
               response.stream.write "event: update\n"
               response.stream.write "data: #{data}\n\n"
             end
           end
         rescue IOError
+          puts "IOError"
+        rescue ClientDisconnected
+          puts "ClientDisconnected"
+        rescue ActionController::Live::ClientDisconnected
+          puts "Live::ClientDisconnected"
         ensure
+          puts "<<< STREAM IS KILL >>>\n"
+
           r.quit
           response.stream.close
         end
       end
+    end
+  end
+
+  # PUT /game_states/:id
+  def update
+    if params[:is_new_id]
+      # TODO
+    elsif @game_state.stream_id = params[:steam_id]
+      # TODO
     end
   end
 

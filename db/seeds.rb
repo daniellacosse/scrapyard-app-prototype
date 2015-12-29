@@ -11,7 +11,7 @@ def make_collec_from_google(id)
 	result = []
 
 	buffer = CSV.parse(
-		open("https://docs.google.com/spreadsheets/d/#{id}/export?format=csv").read
+		open("https://docs.google.com/spreadsheets/d/#{id}/export?format=csv", ssl_verify_mode: OpenSSL::SSL::VERIFY_NONE).read
 	)
 
 	headers = buffer.shift
@@ -31,10 +31,12 @@ class String
 	end
 
 	def parse_on_effect
-		split(/,\s*\(\d*[+-]\)/).map do |effect_str|
+		split("\n").compact.map do |effect_str|
+			next unless effect_str.match(/^\([+-.]\d*\)\s+(.*)/)
+
 			{
-				description: effect_str.match(/^\([+-]\d*\)\s*(.*)/)[1],
-				magnitude: (effect_str.match(/^\([+-](\d*)\)/)[1] || 1).to_i
+				description: effect_str.match(/^\([+-.]\d*\)\s+(.*)/)[1],
+				magnitude: (effect_str.match(/^\([+-.](\d*)\)/)[1] || 1).to_i
 			}
 		end
 	end
@@ -48,75 +50,75 @@ class String
 end
 
 ### OFFLINE TEST ###
-blueprints = [
-	{
-		"name" => "module1",
-		"rq1" => "class1, (2) class2",
-		"rq1_val" => "3",
-		"rq2" => "scrap1",
-		"rq2_val" => "7"
-	}, {
-		"name" => "module2",
-		"rq1" => "class1 & class2, (3) class2",
-		"rq1_val" => "6",
-		"rq2" => "scrap2",
-		"rq2_val" => "8"
-	}
-]
-
-modules = [
-	{
-		"name" => "module1",
-		"mod_type" => "ARM",
-		"armor" => "6",
-		"res" => "3",
-		"weight" => "2",
-		"gives_digging" => "FALSE",
-		"gives_flying" => "TRUE",
-		"weapon" => "MELEE",
-		"weapon_targets" => "Arm, Leg",
-		"weapon_dmg" => "3",
-		"weapon_acc" => "12",
-		"effects" => "(+) good effect"
-	}, {
-		"name" => "module2",
-		"mod_type" => "LEG",
-		"armor" => "4",
-		"res" => "3",
-		"weight" => "2",
-		"gives_digging" => "TRUE",
-		"gives_flying" => "FALSE",
-		"weapon" => nil,
-		"weapon_targets" => nil,
-		"weapon_dmg" => nil,
-		"weapon_acc" => nil,
-		"effects" => "(+) good effect"
-	}
-]
-
-scraps = [
-	{
-		"name" => "scrap1",
-		"classes" => "class1",
-		"value" => "1",
-		"effects" => nil
-	}, {
-		"name" => "scrap2",
-		"classes" => "class1",
-		"value" => "2",
-		"effects" => "(+) good effect"
-	}, {
-		"name" => "scrap3",
-		"classes" => "class1, class2",
-		"value" => "3",
-		"effects" => nil
-	}
-]
+# blueprints = [
+# 	{
+# 		"name" => "module1",
+# 		"rq1" => "class1, (2) class2",
+# 		"rq1_val" => "3",
+# 		"rq2" => "scrap1",
+# 		"rq2_val" => "7"
+# 	}, {
+# 		"name" => "module2",
+# 		"rq1" => "class1 & class2, (3) class2",
+# 		"rq1_val" => "6",
+# 		"rq2" => "scrap2",
+# 		"rq2_val" => "8"
+# 	}
+# ]
+#
+# modules = [
+# 	{
+# 		"name" => "module1",
+# 		"mod_type" => "ARM",
+# 		"armor" => "6",
+# 		"res" => "3",
+# 		"weight" => "2",
+# 		"gives_digging" => "FALSE",
+# 		"gives_flying" => "TRUE",
+# 		"weapon" => "MELEE",
+# 		"weapon_targets" => "Arm, Leg",
+# 		"weapon_dmg" => "3",
+# 		"weapon_acc" => "12",
+# 		"effects" => "(+) good effect"
+# 	}, {
+# 		"name" => "module2",
+# 		"mod_type" => "LEG",
+# 		"armor" => "4",
+# 		"res" => "3",
+# 		"weight" => "2",
+# 		"gives_digging" => "TRUE",
+# 		"gives_flying" => "FALSE",
+# 		"weapon" => nil,
+# 		"weapon_targets" => nil,
+# 		"weapon_dmg" => nil,
+# 		"weapon_acc" => nil,
+# 		"effects" => "(+) good effect"
+# 	}
+# ]
+#
+# scraps = [
+# 	{
+# 		"name" => "scrap1",
+# 		"classes" => "class1",
+# 		"value" => "1",
+# 		"effects" => nil
+# 	}, {
+# 		"name" => "scrap2",
+# 		"classes" => "class1",
+# 		"value" => "2",
+# 		"effects" => "(+) good effect"
+# 	}, {
+# 		"name" => "scrap3",
+# 		"classes" => "class1, class2",
+# 		"value" => "3",
+# 		"effects" => nil
+# 	}
+# ]
 
 ### SCRIPT BEGIN ###
-# blueprints = make_collec_from_google BLUEPRINT_GSHEET_ID
-# modules = make_collec_from_google MODULE_GSHEET_ID
-# scraps = make_collec_from_google SCRAP_GSHEET_ID
+blueprints = make_collec_from_google BLUEPRINT_GSHEET_ID
+modules = make_collec_from_google MODULE_GSHEET_ID
+scraps = make_collec_from_google SCRAP_GSHEET_ID
 
 scraps.each do |scrap_data|
 	scrap = Scrap.create name: scrap_data["name"], value: scrap_data["value"]
@@ -150,7 +152,8 @@ modules.each do |mod_data|
 	end
 
 	blueprint_data = blueprints.find { |b| b["name"] == mod.name }
-	blueprint = Blueprint.create scrapper_module_id: mod.id
+	byebug unless !!blueprint_data
+	blueprint = Blueprint.create scrapper_module_id: mod.id, rank: blueprint_data["rank"]
 
 	mod.blueprint_id = blueprint.id
 	mod.save
@@ -160,7 +163,7 @@ modules.each do |mod_data|
 
 		if blueprint_data[req_key] && blueprint_data[req_val_key]
 			blueprint.add_requirement(
-				options: blueprint_data[req_key].split_on_comma,
+				options: blueprint_data[req_key].split("\n"),
 				override_value: blueprint_data[req_val_key]
 			)
 		end

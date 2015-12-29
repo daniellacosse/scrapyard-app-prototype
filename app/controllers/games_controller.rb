@@ -10,26 +10,6 @@ class GamesController < ApplicationController
     @games = Game.all
   end
 
-  # # GET /games/1
-  # # GET /games/1.json
-  # def show
-  #    response.headers["Content-Type"] = "text/event-stream"
-  #
-  #    r = Redis.new # url: ENV["REDIS_URL"] || "redis://127.0.0.1:6379/0"
-  #    begin
-  #      r.subscribe("game#{@game.id}") do |on|
-  #         on.message do |event, data|
-  #            response.stream.write "event: update\n"
-  #            response.stream.write "data: #{data}\n\n"
-  #         end
-  #      end
-  #    rescue IOError
-  #    ensure
-  #       r.quit
-  #       response.stream.close
-  #    end
-  #  end
-
   # POST /games/1/join
   def join
      @game = Game.find params["id"]

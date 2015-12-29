@@ -16,26 +16,24 @@ class ScrapperModule < ActiveRecord::Base
 	end
 
 	def power
+		inverse_weight = 1 / weight.to_i if weight.to_i > 0
+
 		raw_stat_sum = [
-			armor, res, (1 / weight), targets.count, weapon_dmg, weapon_acc
-		].sum
+			armor, res, inverse_weight, targets.count, weapon_dmg, weapon_acc
+		].map(&:to_i).sum
 
 		true_flags = 0.0
 		true_flags += 1.0 if gives_digging
 		true_flags += 1.0 if gives_flying
 
-		if weapon_type == "MELEE"
+		if weapon == "MELEE"
 			true_flags += 0.5
-		elsif weapon_type == "RANGED"
+		elsif weapon == "RANGED"
 			true_flags += 1.0
 		end
 
 		true_flags = true_flags / 3.0 + 1.0
 
 		raw_stat_sum * (2.0 ** effects.map(&:magnitude).sum) * true_flags
-	end
-
-	def pcr
-		power / blueprint.cost
 	end
 end

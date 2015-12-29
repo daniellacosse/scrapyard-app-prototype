@@ -130,6 +130,7 @@
 
   <script>
     var stateSource = new EventSource("/game_states/" + <%= @game_state.id %> + ".json");
+    var streamID = Math.round(Math.random() * 100000);
 
     stateSource.addEventListener("update", function (event) {
       var data = JSON.parse(event.data);
@@ -146,6 +147,17 @@
         renderBuiltModules(data.scrapper_modules);
       }
     });
+
+    $.put("/game_states/" + <%= @game_state.id %> + ".json", {
+      stream_id: streamID,
+      is_new_id: true
+    });
+
+    setInterval(function () {
+      $.put("/game_states/" + <%= @game_state.id %> + ".json", {
+        stream_id: streamID
+      });
+    }, 2000);
 
     function renderBlueprintSelect(blueprints) {
       if (blueprints && blueprints.length) {
