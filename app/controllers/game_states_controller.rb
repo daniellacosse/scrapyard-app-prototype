@@ -80,23 +80,42 @@ class GameStatesController < ApplicationController
 
   # POST /game_states/:id/draw/:card_type
   def draw
-    card_id = params[:card_id]
-    card_type = params[:card_type]
+    card_id, card_type = params[:card_id], params[:card_type]
 
     if card_type == "scrap"
-      @game_state.scrap_holds << ScrapHold.create(scrap_id: card_id)
-      # TODO: check to see if any player needs that & notify them
-      handle_response @game_state.save, [ "scraps" ]
+      hold = ScrapHold.create(scrap_id: card_id)
+      @game_state.scrap_holds << hold
 
+      handle_response @game_state.save, [ "scraps" ] do
+        scrap = hold.scrap
+
+        @game_state.siblings.each do |sibling|
+          next if sibling.id == @game_state.id
+          matches = sibling.blueprints.to_a.select { |bp| bp.requires? scrap }
+
+          if matches.length > 0
+            alert_text = <<-HEREDOC
+              #{@game_state.player.email} just drew a(n) #{scrap.name}!
+              (You'll need one for: #{matches.map(&:name).join(', ')}.)
+            HEREDOC
+
+            send_alert to: sibling, with: alert_text
+          end
+        end
+      end
     elsif card_type == "blueprint"
       @game_state.blueprint_holds << BlueprintHold.create(blueprint_id: card_id)
 
-      @game_state.siblings.each { |state| publish_data state, ["blueprints", "available_blueprints"] }
-      render json: @game_state, status: :updated
+      handle_response @game_state.save, [ "blueprints", "available_blueprints" ] do
+        @game_state.siblings.each do |sibling|
+          next if sibling.id == @game_state.id
+
+          publish_data sibling, [ "available_blueprints" ]
+        end
+      end
     else
       flash[:error] = "Card type drawn (#{card_type}) invalid!"
     end
-
   end
 
   # POST /game_states/:id/sell/:scrap_hold_id
@@ -167,7 +186,7 @@ class GameStatesController < ApplicationController
 
     if no_error
       publish_data @game_state, states
-      block
+      block.call
 
       render json: @game_state, status: :updated
     else

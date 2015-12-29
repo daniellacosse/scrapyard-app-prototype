@@ -24,21 +24,6 @@ class Blueprint < ActiveRecord::Base
 		rank_distributions
 	end
 
-	# def self.rank_to_power_distribution
-	# 	rank_distributions = {}
-	#
-	# 	all
-	# 		.group_by { |bp| bp.rank }
-	# 		.each_pair do |rank, prints|
-	# 			rank_distributions[rank] = {
-	# 				mean: prints.map(&:power).mean,
-	# 				std_dev: prints.map(&:power).standard_deviation
-	# 			}
-	# 		end
-	#
-	# 	rank_distributions
-	# end
-
 	def add_requirement(requirement_data)
 		requirement = Requirement.create(
 			override_value: requirement_data[:override_value]
@@ -47,7 +32,7 @@ class Blueprint < ActiveRecord::Base
 		requirement_data[:options].each do |option_string|
 			option_stub = Option.create()
 
-			option_string.split(/, /).each do |ingredient|
+			option_string.split(", ").each do |ingredient|
 				if /^.+\(\d+\)/ =~ ingredient
 					ingredient_name = ingredient.match(/^(.+)\s+\(\d+\)/)[1]
 					ingredient_count = ingredient.match(/^.+\((\d+)\)/)[1].to_i
@@ -57,8 +42,6 @@ class Blueprint < ActiveRecord::Base
 
 				if class_match = ingredient_name.match(/\[(.*)\]/)
 					found_class = ClassType.find_by_name(class_match[1])
-
-					puts class_match[1] unless found_class
 
 					unless found_class
 						puts ingredient_name
@@ -96,6 +79,20 @@ class Blueprint < ActiveRecord::Base
 
 	def name
 		scrapper_module.name
+	end
+
+	def requires?(scrap)
+		match = false
+
+		requirements.each do |requirement|
+			next if match
+			requirement.options.each do |option|
+				next if match
+				match = true if option.scraps.include? scrap
+			end
+		end
+
+		match
 	end
 
 	def rough_pcr

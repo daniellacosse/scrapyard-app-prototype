@@ -61,4 +61,9 @@ class ApplicationController < ActionController::Base
     r = Redis.new # url: ENV["REDIS_URL"] || "redis://127.0.0.1:6379/0"
     r.publish "stream#{data.id}", JSON.dump(response)
   end
+
+  def send_alert(options)
+    r = Redis.new # url: ENV["REDIS_URL"] || "redis://127.0.0.1:6379/0"
+    r.publish "stream#{options[:to].id}", JSON.dump({ alert: options[:with] })
+  end
 end
