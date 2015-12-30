@@ -4,8 +4,9 @@ class Game < ActiveRecord::Base
 
 	def available_blueprints
 		taken_blueprints = game_states.collect(&:blueprints).flatten
+		built_blueprints = game_states.collect(&:scrapper_modules).flatten.map(&:blueprint)
 
-		Blueprint.all - taken_blueprints
+		Blueprint.all - taken_blueprints - built_blueprints
 	end
 
 	def start_if_all_ready

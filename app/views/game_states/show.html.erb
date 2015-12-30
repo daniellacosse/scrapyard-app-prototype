@@ -41,7 +41,7 @@
       <%= token_tag nil %>
       <select name="card_id">
         <option>Choose a scrap</option>
-        <% Scrap.all.each do |scrap| %>
+        <% Scrap.all.sort { |s1, s2| s1.name <=> s2.name }.each do |scrap| %>
         <option value="<%= scrap.id %>"><%= scrap.name %></option>
         <% end %>
       </select>
@@ -56,7 +56,7 @@
       <%= token_tag nil %>
       <select id="blueprint-select" name="card_id">
         <option>Choose a blueprint</option>
-        <% @game_state.game.available_blueprints.each do |blueprint| %>
+        <% @game_state.game.available_blueprints.sort { |bp1, bp2| bp1.name <=> bp2.name }.each do |blueprint| %>
         <option value="<%= blueprint.id %>">
           <%= blueprint.scrapper_module.name %>
         </option>
@@ -99,7 +99,7 @@
             <% @game_state.blueprint_holds.each do |hold| %>
             <li>
               <%= hold.blueprint.name %>
-              <%= button_to 'Build' %>
+              <%= button_to 'Build', build_path(@game_state, hold), remote: true %>
               |
               <%= button_to 'Discard', blueprint_hold_path(hold), remote: true, data: { confirm: 'Are you sure?' }, method: :delete  %>
             </li>
@@ -220,7 +220,7 @@
           for (var blueprint of blueprints) {
             blueprint = JSON.parse(blueprint);
 
-            heldBlueprintsHTML += "<li>" + blueprint.name + ` <%= button_to 'Build' %> |` + ` <form class="button_to" method="delete" action="/blueprint_holds/` + blueprint.id + `" data-remote="true"><input type="submit" value="Discard"><%= token_tag nil %></form>` + "</li>"
+            heldBlueprintsHTML += "<li>" + blueprint.name + ` <form class="button_to" method="delete" action="/game_state/<%= @game_state.id %>/build/` + blueprint.id + `" data-remote="true"><input type="submit" value="Build"><%= token_tag nil %></form> | <form class="button_to" method="delete" action="/blueprint_holds/` + blueprint.id + `" data-remote="true"><input type="submit" value="Discard"><%= token_tag nil %></form>` + "</li>"
           }
         } else heldBlueprintsHTML = "No Held Blueprints";
 

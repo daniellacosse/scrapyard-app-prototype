@@ -1,4 +1,4 @@
-require 'json'
+require "json"
 
 ALL_STATES = %w(
   raw players scraps blueprints
@@ -127,11 +127,28 @@ class GameStatesController < ApplicationController
 
   # POST /game_states/:id/build/:blueprint_id
   def build
-    # check if player has blueprint
-    # check if player has resources
-    # delete blueprint_hold and scrap_holds and create module_hold
+    @blueprint_hold = BlueprintHold.find params[:blueprint_id]
+    success = false
+    tribute = JSON.parse(params[:build_blob])
 
-    handle_response success
+    transaction do
+      if !!tribute
+        success = @game_state.update(raw: @game_state.raw - tribute["raw"].to_i)
+        success &= tribute["scraps"].map do |scrap_name|
+          @game_state.scrap_holds
+            .to_a
+            .find { |sh| sh.scrap.name == scrap_name }
+            .destroy
+        end.all?
+      end
+
+      success &= @blueprint_hold.destroy
+      success &= ModuleHold.create(
+        scrapper_module_id: @blueprint_hold.blueprint.scrapper_module.id
+      )
+    end
+
+    publish_data @game_state, ALL_STATES; render :show
   end
 
   # POST /game_states/:id/ready

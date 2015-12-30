@@ -32,7 +32,7 @@ class ApplicationController < ActionController::Base
             doc.to_json
           end
        when "available_blueprints"
-          response[item] = data.game.available_blueprints.to_a.map &:to_json
+          response[item] = data.game.available_blueprints.to_a.sort { |bp1, bp2| bp1.name <=> bp2.name }.map &:to_json
        when "raw"
           response[item] = data[:raw]
        when "scraps"
