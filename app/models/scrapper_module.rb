@@ -1,4 +1,6 @@
 class ScrapperModule < ActiveRecord::Base
+	has_one :blueprint
+
 	has_many :weapon_targets
 	has_many :targets, through: :weapon_targets
 

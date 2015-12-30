@@ -53,16 +53,16 @@
     <p>
       <b>Take Blueprint:</b>
       <%= form_tag("/game_states/#{@game_state.id}/draw/blueprint", remote: true) do %>
-      <%= token_tag nil %>
-      <select id="blueprint-select" name="card_id">
-        <option>Choose a blueprint</option>
-        <% @game_state.game.available_blueprints.sort { |bp1, bp2| bp1.name <=> bp2.name }.each do |blueprint| %>
-        <option value="<%= blueprint.id %>">
-          <%= blueprint.scrapper_module.name %>
-        </option>
-        <% end %>
-      </select>
-      <input type="submit" value="Draw"></input>
+        <%= token_tag nil %>
+        <select id="blueprint-select" name="card_id">
+          <option>Choose a blueprint</option>
+          <% @game_state.game.available_blueprints.sort { |bp1, bp2| bp1.name <=> bp2.name }.each do |blueprint| %>
+          <option value="<%= blueprint.id %>">
+            <%= blueprint.scrapper_module.name %>
+          </option>
+          <% end %>
+        </select>
+        <input type="submit" value="Draw"></input>
       <% end %>
     </p>
 
@@ -70,6 +70,14 @@
     <p id="player-materials" style="color: red;">
       <b>Raw Materials:</b>
       <%= @game_state[:raw] || 0 %>
+    </p>
+
+    <p>
+      <%= form_tag("/game_states/#{@game_state.id}/discard_raw", remote: true) do %>
+        <%= token_tag nil %>
+        <input type="number" name="raw_amount" min="0">
+        <input type="submit" value="Discard Raw"></input>
+      <% end %>
     </p>
 
     <!-- HELD SCRAPS -->
@@ -116,7 +124,7 @@
         <ul id="held-modules">
           <% if @game_state.module_holds.count > 0 %>
             <% @game_state.module_holds.each do |hold| %>
-            <li><%= hold.scrapper_modules.name %></li>
+            <li><%= hold.scrapper_module.name %></li>
             <% end %>
           <% else %>
             No Built Modules
@@ -220,7 +228,7 @@
           for (var blueprint of blueprints) {
             blueprint = JSON.parse(blueprint);
 
-            heldBlueprintsHTML += "<li>" + blueprint.name + ` <form class="button_to" method="delete" action="/game_state/<%= @game_state.id %>/build/` + blueprint.id + `" data-remote="true"><input type="submit" value="Build"><%= token_tag nil %></form> | <form class="button_to" method="delete" action="/blueprint_holds/` + blueprint.id + `" data-remote="true"><input type="submit" value="Discard"><%= token_tag nil %></form>` + "</li>"
+            heldBlueprintsHTML += "<li>" + blueprint.name + ` <form class="button_to" method="put" action="/game_state/<%= @game_state.id %>/build/` + blueprint.id + `" data-remote="true"><input type="submit" value="Build"><%= token_tag nil %></form> | <form class="button_to" method="delete" action="/blueprint_holds/` + blueprint.id + `" data-remote="true"><input type="submit" value="Discard"><%= token_tag nil %></form>` + "</li>"
           }
         } else heldBlueprintsHTML = "No Held Blueprints";
 

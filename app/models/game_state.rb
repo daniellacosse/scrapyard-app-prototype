@@ -25,4 +25,8 @@ class GameState < ActiveRecord::Base
 
 		success
 	end
+
+	def holds?(scrap)
+		scraps.include? scrap
+	end
 end

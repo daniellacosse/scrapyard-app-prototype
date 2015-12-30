@@ -9,6 +9,7 @@ Rails.application.routes.draw do
 
   post "games/:id/join" => "games#join", as: "join_game"
 
+  post "game_states/:id/discard_raw" => "game_states#discard_raw", as: "discard_raw"
   post "game_states/:id/draw/:card_type" => "game_states#draw", as: "draw"
   post "game_states/:id/sell/:scrap_hold_id" => "game_states#sell", as: "sell"
   post "game_states/:id/build/:blueprint_id" => "game_states#build", as: "build"

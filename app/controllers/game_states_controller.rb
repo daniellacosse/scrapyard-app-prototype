@@ -12,7 +12,8 @@ class GameStatesController < ApplicationController
   # ]
   before_action :set_state, only: [
     :show, :edit, :update, :destroy, :draw,
-		:trade, :build, :sell, :end_turn, :ready
+		:trade, :build, :sell, :end_turn, :ready,
+    :discard_raw
   ]
 
   def show
@@ -78,6 +79,12 @@ class GameStatesController < ApplicationController
     end
   end
 
+  def discard_raw
+    success = @game_state.update(raw: @game_state.raw - params[:raw_amount].to_i)
+
+    handle_response success, ["raw"]
+  end
+
   # POST /game_states/:id/draw/:card_type
   def draw
     card_id, card_type = params[:card_id], params[:card_type]
@@ -91,7 +98,9 @@ class GameStatesController < ApplicationController
 
         @game_state.siblings.each do |sibling|
           next if sibling.id == @game_state.id
-          matches = sibling.blueprints.to_a.select { |bp| bp.requires? scrap }
+          matches = sibling.blueprints.to_a.select do |bp|
+            !sibling.holds?(scrap) && bp.requires?(scrap)
+          end
 
           if matches.length > 0
             alert_text = <<-HEREDOC
@@ -129,9 +138,9 @@ class GameStatesController < ApplicationController
   def build
     @blueprint_hold = BlueprintHold.find params[:blueprint_id]
     success = false
-    tribute = JSON.parse(params[:build_blob])
+    tribute = JSON.parse(params[:build_blob]) if params[:build_blob]
 
-    transaction do
+    # transaction do
       if !!tribute
         success = @game_state.update(raw: @game_state.raw - tribute["raw"].to_i)
         success &= tribute["scraps"].map do |scrap_name|
@@ -144,9 +153,10 @@ class GameStatesController < ApplicationController
 
       success &= @blueprint_hold.destroy
       success &= ModuleHold.create(
-        scrapper_module_id: @blueprint_hold.blueprint.scrapper_module.id
+        scrapper_module_id: @blueprint_hold.blueprint.scrapper_module.id,
+        game_state_id: @game_state.id
       )
-    end
+    # end
 
     publish_data @game_state, ALL_STATES; render :show
   end
@@ -203,7 +213,7 @@ class GameStatesController < ApplicationController
 
     if no_error
       publish_data @game_state, states
-      block.call
+      block.call if block
 
       render json: @game_state, status: :updated
     else
