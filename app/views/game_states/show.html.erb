@@ -228,7 +228,7 @@
           for (var blueprint of blueprints) {
             blueprint = JSON.parse(blueprint);
 
-            heldBlueprintsHTML += "<li>" + blueprint.name + ` <form class="button_to" method="put" action="/game_state/<%= @game_state.id %>/build/` + blueprint.id + `" data-remote="true"><input type="submit" value="Build"><%= token_tag nil %></form> | <form class="button_to" method="delete" action="/blueprint_holds/` + blueprint.id + `" data-remote="true"><input type="submit" value="Discard"><%= token_tag nil %></form>` + "</li>"
+            heldBlueprintsHTML += "<li>" + blueprint.name + ` <form class="button_to" method="post" action="/game_states/<%= @game_state.id %>/build/` + blueprint.id + `" data-remote="true"><input type="submit" value="Build"><%= token_tag nil %></form> | <form class="button_to" method="delete" action="/blueprint_holds/` + blueprint.id + `" data-remote="true"><input type="submit" value="Discard"><%= token_tag nil %></form>` + "</li>"
           }
         } else heldBlueprintsHTML = "No Held Blueprints";
 
