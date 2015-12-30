@@ -1,6 +1,11 @@
 class BlueprintHoldsController < ApplicationController
   before_action :authenticate_player!
 
+  def show
+    @blueprint_hold = BlueprintHold.find(params[:id])
+    @constructions = blueprint_hold.possible_constructions
+  end
+
   def destroy
     @blueprint_hold = BlueprintHold.find(params[:id])
 

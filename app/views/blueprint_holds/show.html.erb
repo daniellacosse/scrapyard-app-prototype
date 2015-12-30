@@ -1,0 +1,25 @@
+<% if @constructions && @constructions.length > 0 %>
+  <%= form_tag("/game_states/#{@blueprint_hold.game_state.id}/build/#{@blueprint_hold.id}") do %>
+    <%= token_tag nil %>
+    <% @constructions.each do |construction| %>
+      <input type="radio" name="build_blob" value="<%= construction[:blob] %>" />
+      <%= construction[:pretty] %>
+    <% end %>
+    <input type="submit" value="Build"></input>
+  <% end %>
+<% else %>
+  <b>
+    You don't have all the necessary parts to build <%= @blueprint_hold.name %>!
+  </b>
+  <!-- <br>
+  <span>You still need:</span>
+  <ul>
+    <% @blueprint_hold.missing_parts.each do |part_group| %>
+      <li><%= part_group %></li>
+    <% end %>
+  </ul> -->
+<% end %>
+
+<% button_to 'Manual Override', build_path(@blueprint_hold.game_state, @blueprint_hold) %>
+
+<% link_to 'Back', @blueprint_hold.game_state %>
