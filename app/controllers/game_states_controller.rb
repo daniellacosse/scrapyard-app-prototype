@@ -89,7 +89,7 @@ class GameStatesController < ApplicationController
   def draw
     card_id, card_type = params[:card_id], params[:card_type]
 
-    if card_type == "scrap"
+    if card_type == "scrap" && !!card_id && card_id != 0
       hold = ScrapHold.create(scrap_id: card_id)
       @game_state.scrap_holds << hold
 
@@ -112,7 +112,7 @@ class GameStatesController < ApplicationController
           end
         end
       end
-    elsif card_type == "blueprint"
+    elsif card_type == "blueprint" && !!card_id && card_id != 0
       @game_state.blueprint_holds << BlueprintHold.create(blueprint_id: card_id)
 
       handle_response @game_state.save, [ "blueprints", "available_blueprints" ] do
