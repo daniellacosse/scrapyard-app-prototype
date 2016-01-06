@@ -30,6 +30,12 @@ class GamesController < ApplicationController
         return
      end
 
+     if @game.has_started
+        flash[:error] = "This game is already underway!"
+        redirect_to games_url
+        return
+     end
+
      @game_state = GameState.new(
         player_id: current_player.id, game_id: @game.id
      )

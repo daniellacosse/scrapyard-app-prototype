@@ -12,7 +12,11 @@
     <% @games.each do |game| %>
       <tr>
         <td><%= game.guid %></td>
-        <td><%= link_to 'Join', join_game_path(id: game.id), method: :post =%>
+        <% if !game.has_started %>
+          <td><%= link_to 'Join', join_game_path(id: game.id), method: :post =%>
+        <% else %>
+          <td>In Progress</td>
+        <% end %>
       </tr>
     <% end %>
   </tbody>
