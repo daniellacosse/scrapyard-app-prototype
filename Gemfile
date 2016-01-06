@@ -1,3 +1,4 @@
+ruby '2.2.1'
 source 'https://rubygems.org'
 
 gem 'puma'
@@ -5,6 +6,7 @@ gem 'devise'
 gem 'redis'
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
 gem 'rails', '4.2.4'
+gem 'rails_12factor'
 # Use sqlite3 as the database for Active Record
 gem 'pg'
 # Use SCSS for stylesheets
