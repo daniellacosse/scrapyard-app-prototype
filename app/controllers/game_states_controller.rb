@@ -16,6 +16,8 @@ class GameStatesController < ApplicationController
     :discard_raw
   ]
 
+  before_action :close_db_connection, only: :show
+
   def show
     respond_to do |format|
       format.html { render :show }
@@ -28,7 +30,7 @@ class GameStatesController < ApplicationController
         @last_active = Time.zone.now
 
         begin
-          r.subscribe sub_string, "heartbeat" do |on|
+          r.subscribe sub_string do |on|
             puts "#{current_player.email} Connected!"
 
             on.message do |_event, data|
@@ -219,5 +221,9 @@ class GameStatesController < ApplicationController
     else
       render json: @game_state.errors, status: :unprocessable_entity
     end
+  end
+
+  def close_db_connection
+    ActiveRecord::Base.connection_pool.release_connection
   end
 end
