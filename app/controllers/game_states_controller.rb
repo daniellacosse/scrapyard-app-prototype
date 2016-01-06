@@ -36,7 +36,12 @@ class GameStatesController < ApplicationController
             on.message do |_event, data|
               current_state = GameState.find params[:id]
               idle_time = (Time.zone.now - current_state.updated_at).to_i
-              r.unsubscribe if idle_time > 3.seconds
+
+              if idle_time > 3.seconds
+                r.unsubscribe
+                r.quit
+                response.stream.close
+              end
 
               response.stream.write "event: update\n"
               response.stream.write "data: #{data}\n\n"
