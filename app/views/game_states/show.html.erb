@@ -163,29 +163,29 @@
     });
 
     // monitor connection duplicity
-    $.ajax("/game_states/" + <%= @game_state.id %> + ".json", {
-      method: "PUT",
-      data: {
-        stream_id: streamID,
-        is_new_id: true
-      },
-      success: function (data) {
-        connectionString = data.connection_string;
-      }
-    });
-
-    setInterval(function () {
-      $.ajax("/game_states/" + <%= @game_state.id %> + ".json", {
-        method: "PUT",
-        data: {
-          stream_id: streamID,
-          connection_string: connectionString
-        },
-        success: function (data) {
-          connectionString = data.connection_string;
-        }
-      });
-    }, 2000);
+    // $.ajax("/game_states/" + <%= @game_state.id %> + ".json", {
+    //   method: "PUT",
+    //   data: {
+    //     stream_id: streamID,
+    //     is_new_id: true
+    //   },
+    //   success: function (data) {
+    //     connectionString = data.connection_string;
+    //   }
+    // });
+    //
+    // setInterval(function () {
+    //   $.ajax("/game_states/" + <%= @game_state.id %> + ".json", {
+    //     method: "PUT",
+    //     data: {
+    //       stream_id: streamID,
+    //       connection_string: connectionString
+    //     },
+    //     success: function (data) {
+    //       connectionString = data.connection_string;
+    //     }
+    //   });
+    // }, 2000);
 
     function renderBlueprintSelect(blueprints) {
       if (blueprints && blueprints.length) {

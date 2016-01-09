@@ -33,14 +33,14 @@ class GameStatesController < ApplicationController
             puts "#{current_player.email} Connected!"
 
             on.message do |_event, data|
-              current_state = GameState.find params[:id]
-              idle_time = (Time.zone.now - current_state.updated_at).to_i
+              # current_state = GameState.find params[:id]
+              # idle_time = (Time.zone.now - current_state.updated_at).to_i
 
-              if idle_time > 3.seconds
-                $redis.unsubscribe
-                $redis.quit
-                response.stream.close
-              end
+              # if idle_time > 3.seconds
+              #   $redis.unsubscribe
+              #   $redis.quit
+              #   response.stream.close
+              # end
 
               response.stream.write "event: update\n"
               response.stream.write "data: #{data}\n\n"
