@@ -25,6 +25,7 @@ class GameStatesController < ApplicationController
       format.json do
         response.headers['Content-Type'] = 'text/event-stream'
 
+        # r = Redis.new( url: ENV["REDISCLOUD_URL"] || "redis://127.0.0.1:6379/0"
         sub_string = "stream#{@game_state.id}"
         @last_active = Time.zone.now
 
@@ -35,10 +36,10 @@ class GameStatesController < ApplicationController
             on.message do |_event, data|
               # current_state = GameState.find params[:id]
               # idle_time = (Time.zone.now - current_state.updated_at).to_i
-
+              #
               # if idle_time > 3.seconds
-              #   $redis.unsubscribe
-              #   $redis.quit
+              #   r.unsubscribe
+              #   r.quit
               #   response.stream.close
               # end
 
