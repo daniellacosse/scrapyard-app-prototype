@@ -25,24 +25,15 @@ class GameStatesController < ApplicationController
       format.json do
         response.headers['Content-Type'] = 'text/event-stream'
 
-        # r = Redis.new( url: ENV["REDISCLOUD_URL"] || "redis://127.0.0.1:6379/0"
+        r = $redis || Redis.new( url: ENV["REDISCLOUD_URL"] || "redis://127.0.0.1:6379/0")
         sub_string = "stream#{@game_state.id}"
         @last_active = Time.zone.now
 
         begin
-          $redis.subscribe sub_string do |on|
+          r.subscribe sub_string do |on|
             puts "#{current_player.email} Connected!"
 
             on.message do |_event, data|
-              # current_state = GameState.find params[:id]
-              # idle_time = (Time.zone.now - current_state.updated_at).to_i
-              #
-              # if idle_time > 3.seconds
-              #   r.unsubscribe
-              #   r.quit
-              #   response.stream.close
-              # end
-
               response.stream.write "event: update\n"
               response.stream.write "data: #{data}\n\n"
             end
@@ -56,38 +47,17 @@ class GameStatesController < ApplicationController
         ensure
           puts "<<< STREAM IS KILL >>>\n"
 
-          $redis.quit
+          r.unsubscribe sub_string
+          r.quit
           response.stream.close
         end
       end
     end
   end
 
-  # PUT /game_states/:id
-  def update
-    connection_string = ("a".."z").to_a.shuffle[0,8].join
-
-    if params[:is_new_id]
-      @game_state.stream_id = params[:stream_id]
-      @game_state.connection_string = connection_string
-    elsif @game_state.stream_id == params[:steam_id] && @game_state.connection_string == params[:connection_string]
-      @game_state.connection_string = connection_string
-    end
-
-    if @game_state.save
-      respond_to do |format|
-        format.html { render :show }
-        format.json do
-          render json: { ok: true, connection_string: connection_string }
-        end
-      end
-    else
-      render json: @game_state.errors, status: :unprocessable_entity
-    end
-  end
-
+  # POST /game_states/:id/discard_raw
   def discard_raw
-    success = @game_state.update(raw: @game_state.raw - params[:raw_amount].to_i)
+    success = @game_state.update raw: @game_state.raw - params[:raw_amount].to_i
 
     handle_response success, ["raw"]
   end
@@ -165,7 +135,8 @@ class GameStatesController < ApplicationController
       )
     # end
 
-    publish_data @game_state, ALL_STATES; render :show
+    publish_data @game_state, ALL_STATES
+    render :show
   end
 
   # POST /game_states/:id/ready
@@ -176,8 +147,12 @@ class GameStatesController < ApplicationController
 
     if all_ready
       @game_state.siblings.each { |state| publish_data state, ALL_STATES }
+
+      render json: @game_state, status: :updated
     else
       @game_state.siblings.each { |state| publish_data state, [ "players" ] }
+
+      render json: @game_state, status: :updated
     end
   end
 
@@ -199,6 +174,8 @@ class GameStatesController < ApplicationController
     @next_player_state = GameState.find @next_player_state.id
 
     @game_state.siblings.each { |state| publish_data state, [ "players" ] }
+
+    render json: @game_state, status: :updated
   end
 
   def destroy
