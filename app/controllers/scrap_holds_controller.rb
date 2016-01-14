@@ -4,7 +4,7 @@ class ScrapHoldsController < ApplicationController
   def create
     @game_state = GameState.find(params[:game_state_id])
 
-    @scrap_hold.batch_ids
+    hold_params[:batch_ids]
       .split(/\s*[^a-zA-Z0-9]\s+|\s+/)
       .reject(&:empty?)
       .each do |id|
@@ -16,9 +16,7 @@ class ScrapHoldsController < ApplicationController
   end
 
   def destroy
-
     @scrap_hold = ScrapHold.find(params[:id])
-
     @game_state = @scrap_hold.game_state
 
     if params[:sell]
@@ -28,5 +26,10 @@ class ScrapHoldsController < ApplicationController
     end
 
     render "/game_states/show"
+  end
+
+  private
+  def hold_params
+    params.require(:scrap_hold).permit(:batch_ids)
   end
 end
