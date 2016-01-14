@@ -1,0 +1,23 @@
+<% @scrap_hold ||= ScrapHold.new %>
+
+<%= form_for [@game_state, @scrap_hold] do |f| %>
+  <% if @scrap_hold.errors.any? %>
+    <div id="error_explanation">
+      <h2><%= pluralize(@scrap_hold.errors.count, "error") %> prohibited this game from being saved:</h2>
+
+      <ul>
+      <% @scrap_hold.errors.full_messages.each do |message| %>
+        <li><%= message %></li>
+      <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="field">
+    <%= f.label :batch_ids %><br>
+    <%= f.text_field :batch_ids %>
+  </div>
+  <div class="actions">
+    <%= f.submit %>
+  </div>
+<% end %>

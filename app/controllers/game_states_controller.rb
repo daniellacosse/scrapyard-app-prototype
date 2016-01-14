@@ -13,44 +13,6 @@ class GameStatesController < ApplicationController
     render :show
   end
 
-  # POST /game_states/:id/draw/:card_type
-  def draw
-    card_id, card_type = params[:card_id], params[:card_type]
-
-    if card_type == "scrap" && !!card_id && card_id != 0
-      @game_state.scrap_holds << ScrapHold.create(scrap_id: card_id)
-      @game_state.save
-    elsif card_type == "blueprint" && !!card_id && card_id != 0
-      @game_state.blueprint_holds << BlueprintHold.create(blueprint_id: card_id)
-      @game_state.save
-    else
-      flash.now[:error] = "Card type drawn (#{card_type}) invalid!"
-    end
-
-    render :show
-  end
-
-  # POST /game_states/:id/sell/:scrap_hold_id
-  def sell
-    ScrapHold.find(params[:scrap_hold_id]).sell
-
-    redirect_to game_state_path(@game_state)
-  end
-
-  # POST /game_states/:id/build/:blueprint_id
-  def build
-    @blueprint_hold = BlueprintHold.find(params[:blueprint_id])
-
-    ModuleHold.create(
-      scrapper_module_id: @blueprint_hold.blueprint.scrapper_module.id,
-      game_state_id: @game_state.id
-    )
-
-    @blueprint_hold.destroy
-
-    render :show
-  end
-
   # POST /game_states/:id/ready
   def ready
     @game_state.set_ready
@@ -83,7 +45,6 @@ class GameStatesController < ApplicationController
   end
 
   private
-
   def set_state
     @game_state = GameState.find params[:id]
   end

@@ -1,4 +1,6 @@
 class ScrapHold < ActiveRecord::Base
+	attr_accessor :batch_ids
+
 	belongs_to :game_state
 	belongs_to :scrap
 
