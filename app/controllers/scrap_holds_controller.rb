@@ -4,10 +4,10 @@ class ScrapHoldsController < ApplicationController
   def destroy
     @scrap_hold = ScrapHold.find(params[:id])
 
-    if @scrap_hold.destroy
-      publish_data @scrap_hold.game_state, [ "scraps" ]
+    @game_state = @scrap_hold.game_state
 
-      render nothing: true
-    end
+    @scrap_hold.destroy
+
+    render "/game_states/show"
   end
 end

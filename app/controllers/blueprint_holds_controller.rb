@@ -4,10 +4,10 @@ class BlueprintHoldsController < ApplicationController
   def destroy
     @blueprint_hold = BlueprintHold.find(params[:id])
 
-    if @blueprint_hold.destroy
-      @blueprint_hold.game_state.siblings.each { |state| publish_data state, [ "available_blueprints", "blueprints"] }
+    @game_state = @blueprint_hold.game_state
 
-      render nothing: true
-    end
+    @blueprint_hold.destroy
+
+    render "/game_states/show"
   end
 end
