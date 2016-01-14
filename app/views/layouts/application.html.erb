@@ -13,10 +13,16 @@
 <% end %>
 
 <% flash.each do |key, value| %>
-  <% if key == "notice" %>
-    <script>alert("<%= value %>");</script>
-  <% else %>
-    <%= content_tag :div, value, class: "flash #{key}" %>
+  <% unless value.kind_of?(Array) %>
+    <% value = [ value ] %>
+  <% end %>
+
+  <% value.each do |val| %>
+    <% if key == "alert" %>
+      <script>alert("<%= val %>");</script>
+    <% else %>
+      <%= content_tag :div, val, class: "flash #{key}" %>
+    <% end %>
   <% end %>
 <% end %>
 

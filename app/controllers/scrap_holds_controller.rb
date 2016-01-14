@@ -8,11 +8,34 @@ class ScrapHoldsController < ApplicationController
       .split(/\s*[^a-zA-Z0-9]\s+|\s+/)
       .reject(&:empty?)
       .each do |id|
-        @game_state.scrap_holds << ScrapHold.create(scrap_id: id.to_i)
+        hold = ScrapHold.create(scrap_id: id.to_i)
+
+        if hold.persisted?
+          scrap = hold.scrap
+          @game_state.scrap_holds << hold
+          @game_state.siblings.includes(:blueprints).each do |sibling|
+            next if sibling.id == @game_state.id
+            matches = sibling.blueprints.to_a.select do |bp|
+              !sibling.holds?(scrap) && bp.requires?(scrap)
+            end
+
+            if matches.length > 0
+              alert_text = <<-HEREDOC
+                #{@game_state.player.email} just drew a(n) #{scrap.name}!
+                (You'll need one for: #{matches.map(&:name).join(', ')}.)
+              HEREDOC
+
+              Message.create(game_state_id: sibling.id, text: alert_text)
+            end
+          end
+        else
+          flash[:error] ||= []
+          flash[:error] << "Unable to create scrap hold."
+        end
       end
 
     @game_state.save
-    render "/game_states/show"
+    redirect_to game_state_path(@game_state)
   end
 
   def destroy
@@ -25,7 +48,7 @@ class ScrapHoldsController < ApplicationController
       @scrap_hold.destroy
     end
 
-    render "/game_states/show"
+    redirect_to game_state_path(@game_state)
   end
 
   private

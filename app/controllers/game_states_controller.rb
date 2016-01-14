@@ -3,6 +3,15 @@ class GameStatesController < ApplicationController
   before_action :set_state
 
   def show
+    @game_state.messages.each do |message|
+      unless message.is_viewed
+        flash[:alert] ||= []
+        flash[:alert] << message.text
+
+        message.update(is_viewed: true)
+      end
+    end
+
     render :show
   end
 
@@ -10,14 +19,14 @@ class GameStatesController < ApplicationController
   def discard_raw
     @game_state.update raw: @game_state.raw - params[:raw_amount].to_i
 
-    render :show
+    redirect_to game_state_path(@game_state)
   end
 
   # POST /game_states/:id/ready
   def ready
     @game_state.set_ready
 
-    render :show
+    redirect_to game_state_path(@game_state)
   end
 
   # POST /game_states/:id/turn/end
@@ -35,7 +44,7 @@ class GameStatesController < ApplicationController
     @game_state.update(is_my_turn: false)
     @next_player_state.update(is_my_turn: true)
 
-    render :show
+    redirect_to game_state_path(@game_state)
   end
 
   def destroy

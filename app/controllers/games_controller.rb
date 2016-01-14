@@ -1,7 +1,6 @@
 require 'json'
 
 class GamesController < ApplicationController
-  include ActionController::Live
   before_action :authenticate_player!
   before_action :set_game, only: [:show, :edit, :update, :destroy, :join]
 
