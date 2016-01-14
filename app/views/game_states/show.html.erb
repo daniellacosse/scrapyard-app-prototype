@@ -42,7 +42,7 @@
       <select name="card_id">
         <option>Choose a scrap</option>
         <% Scrap.all.sort { |s1, s2| s1.name <=> s2.name }.each do |scrap| %>
-        <option value="<%= scrap.id %>"><%= scrap.name %></option>
+          <option value="<%= scrap.id %>"><%= scrap.name %></option>
         <% end %>
       </select>
       <input type="submit" value="Draw"></input>
@@ -57,9 +57,9 @@
         <select id="blueprint-select" name="card_id">
           <option>Choose a blueprint</option>
           <% @game_state.game.available_blueprints.sort { |bp1, bp2| bp1.name <=> bp2.name }.each do |blueprint| %>
-          <option value="<%= blueprint.id %>">
-            <%= blueprint.scrapper_module.name %>
-          </option>
+            <option value="<%= blueprint.id %>">
+              <%= blueprint.name %>
+            </option>
           <% end %>
         </select>
         <input type="submit" value="Draw"></input>

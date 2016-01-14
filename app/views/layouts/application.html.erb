@@ -13,7 +13,11 @@
 <% end %>
 
 <% flash.each do |key, value| %>
-  <%= content_tag :div, value, class: "flash #{key}" %>
+  <% if key == "notice" %>
+    <script>alert("<%= value %>");</script>
+  <% else %>
+    <%= content_tag :div, value, class: "flash #{key}" %>
+  <% end %>
 <% end %>
 
 <%= yield %>

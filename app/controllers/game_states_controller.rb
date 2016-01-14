@@ -1,5 +1,4 @@
 class GameStatesController < ApplicationController
-  include ActionController::Live
   before_action :authenticate_player!
   before_action :set_state
 
@@ -21,16 +20,14 @@ class GameStatesController < ApplicationController
     if card_type == "scrap" && !!card_id && card_id != 0
       @game_state.scrap_holds << ScrapHold.create(scrap_id: card_id)
       @game_state.save
-
-      render :show
     elsif card_type == "blueprint" && !!card_id && card_id != 0
       @game_state.blueprint_holds << BlueprintHold.create(blueprint_id: card_id)
       @game_state.save
-
-      render :show
     else
-      flash[:error] = "Card type drawn (#{card_type}) invalid!"
+      flash.now[:error] = "Card type drawn (#{card_type}) invalid!"
     end
+
+    render :show
   end
 
   # POST /game_states/:id/sell/:scrap_hold_id
