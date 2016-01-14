@@ -2,15 +2,15 @@ class GameState < ActiveRecord::Base
 	belongs_to :game
 	belongs_to :player
 
-	has_many :messages
+	has_many :messages, dependent: :destroy
 
-	has_many :module_holds
+	has_many :module_holds, dependent: :destroy
 	has_many :scrapper_modules, through: :module_holds
 
-	has_many :scrap_holds
+	has_many :scrap_holds, dependent: :destroy
 	has_many :scraps, through: :scrap_holds
 
-	has_many :blueprint_holds
+	has_many :blueprint_holds, dependent: :destroy
 	has_many :blueprints, through: :blueprint_holds
 
 	def siblings

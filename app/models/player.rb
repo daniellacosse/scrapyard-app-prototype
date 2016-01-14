@@ -4,6 +4,6 @@ class Player < ActiveRecord::Base
   devise :database_authenticatable, :registerable,
          :recoverable, :rememberable, :trackable, :validatable
 
-  has_many :game_states
+  has_many :game_states, dependent: :destroy
   has_many :games, through: :game_states
 end
