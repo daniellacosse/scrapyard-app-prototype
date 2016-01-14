@@ -10,7 +10,4 @@ environment ENV["RACK_ENV"] || "development"
 
 on_worker_boot do
   ActiveRecord::Base.establish_connection
-
-  # Worker specific setup for Rails 4.1+
-  $redis = Redis.new(url: ENV["REDISCLOUD_URL"] || "redis://localhost:6379/0")
 end
