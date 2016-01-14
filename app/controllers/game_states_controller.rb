@@ -18,41 +18,9 @@ class GameStatesController < ApplicationController
 
   before_action :close_db_connection, only: :show
 
+  # GET /games_states/:id
   def show
-    respond_to do |format|
-      format.html { render :show }
-
-      format.json do
-        response.headers['Content-Type'] = 'text/event-stream'
-
-        r = $redis || Redis.new( url: ENV["REDISCLOUD_URL"] || "redis://127.0.0.1:6379/0")
-        sub_string = "stream#{@game_state.id}"
-        @last_active = Time.zone.now
-
-        begin
-          r.subscribe sub_string do |on|
-            puts "#{current_player.email} Connected!"
-
-            on.message do |_event, data|
-              response.stream.write "event: update\n"
-              response.stream.write "data: #{data}\n\n"
-            end
-          end
-        rescue IOError
-          puts "IOError"
-        rescue ClientDisconnected
-          puts "ClientDisconnected"
-        rescue ActionController::Live::ClientDisconnected
-          puts "Live::ClientDisconnected"
-        ensure
-          puts "<<< STREAM IS KILL >>>\n"
-
-          r.unsubscribe sub_string
-          r.quit
-          response.stream.close
-        end
-      end
-    end
+    render :show
   end
 
   # POST /game_states/:id/discard_raw

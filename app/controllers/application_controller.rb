@@ -15,8 +15,6 @@ class ApplicationController < ActionController::Base
   def publish_data(data, items)
     response = {}
 
-    byebug
-
     # should always say if the game has started or not
     response["started"] = data.game.has_started
 
@@ -60,12 +58,13 @@ class ApplicationController < ActionController::Base
        end
     end
 
-    r = $redis || Redis.new(url: ENV["REDISCLOUD_URL"] || "redis://127.0.0.1:6379/0")
-    r.publish "stream#{data.id}", JSON.dump(response)
+    # r = $redis || Redis.new(url: ENV["REDISCLOUD_URL"] || "redis://127.0.0.1:6379/0")
+    WebsocketRails[:state].trigger(:update, JSON.dump(response))
   end
 
   def send_alert(options)
-    r = $redis || Redis.new(url: ENV["REDISCLOUD_URL"] || "redis://127.0.0.1:6379/0")
-    r.publish "stream#{options[:to].id}", JSON.dump({ alert: options[:with] })
+    # r = $redis || Redis.new(url: ENV["REDISCLOUD_URL"] || "redis://127.0.0.1:6379/0")
+    # r.publish "stream#{options[:to].id}", )
+    WebsocketRails[:state].trigger(:update, JSON.dump({ alert: options[:with] })
   end
 end
