@@ -37,7 +37,7 @@ class GameStatesController < ApplicationController
   def sell
     ScrapHold.find(params[:scrap_hold_id]).sell
 
-    render :show
+    redirect_to game_state_path(@game_state)
   end
 
   # POST /game_states/:id/build/:blueprint_id
