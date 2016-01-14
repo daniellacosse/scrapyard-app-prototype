@@ -21,8 +21,8 @@ class ScrapHoldsController < ApplicationController
 
             if matches.length > 0
               alert_text = <<-HEREDOC
-                #{@game_state.player.email} just drew a(n) #{scrap.name}!
-                (You'll need one for: #{matches.map(&:name).join(', ')}.)
+                #{@game_state.player.email} drew a(n) #{scrap.name}!
+                (You need one for: #{matches.map(&:name).join(', ')}.)
               HEREDOC
 
               Message.create(game_state_id: sibling.id, text: alert_text)

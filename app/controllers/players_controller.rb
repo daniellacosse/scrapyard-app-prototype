@@ -2,13 +2,11 @@ class PlayersController < ApplicationController
   before_action :set_player, only: [:show, :edit, :update, :destroy]
 
   # GET /players
-  # GET /players.json
   def index
     @players = Player.all
   end
 
   # GET /players/1
-  # GET /players/1.json
   def show
   end
 
@@ -22,7 +20,6 @@ class PlayersController < ApplicationController
   end
 
   # POST /players
-  # POST /players.json
   def create
     @player = Player.new(player_params)
 
@@ -37,8 +34,7 @@ class PlayersController < ApplicationController
     end
   end
 
-  # PATCH/PUT /players/1
-  # PATCH/PUT /players/1.json
+  # PUT /players/1
   def update
     respond_to do |format|
       if @player.update(player_params)
@@ -52,7 +48,6 @@ class PlayersController < ApplicationController
   end
 
   # DELETE /players/1
-  # DELETE /players/1.json
   def destroy
     @player.destroy
     respond_to do |format|

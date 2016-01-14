@@ -22,7 +22,7 @@ class BlueprintHoldsController < ApplicationController
       end
 
     @game_state.save
-    render "/game_states/show"
+    redirect_to game_state_path(@game_state)
   end
 
   def destroy
@@ -38,7 +38,7 @@ class BlueprintHoldsController < ApplicationController
     end
 
     @blueprint_hold.destroy
-    render "/game_states/show"
+    redirect_to game_state_path(@game_state)
   end
 
   private
