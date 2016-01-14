@@ -1,19 +1,19 @@
 == SCRAPYARD APP PROTOTYPE
 
-just a rough prototype for playtesting purposes. (not yet stable)
+just a rough prototype for playtesting purposes.
 
 
 TODO (in decreasing priority):
-	(break from coding to rebuild & reformat scraps and modules)
 
 	build
 		(lets player pick for each requirement in modal w/ radio buttons)
 
-	flash errors for trying to do stuff when it is & isn't your turn
-
-Nice to haves:
-	tell players that someone drew a scrap they might be interested in?
-		by name only, that's easiest
-
-	trade with a player
-		(could just have players manually discard & draw)
+	trade
+	
+	more notif cases
+	
+	list of who needs what under each scrap
+	
+	pilots
+	
+	allow/disallow turn actions
