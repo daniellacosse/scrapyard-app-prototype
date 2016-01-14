@@ -16,7 +16,7 @@
         <% if player_state.player.id == current_player.id %>
           <b> (me)</b>
           <% if player_state.is_my_turn %>
-            <%= button_to 'End Turn', end_turn_path(@game_state), remote: true %>
+            <%= button_to 'End Turn', end_turn_path(@game_state) %>
           <% end %>
         <% end %>
         <% unless @game_state.game.has_started %>
@@ -24,7 +24,7 @@
             <span style="color: green;"> Ready!</span>
           <% end %>
           <% if player_state.player.id == current_player.id && !player_state.is_ready %>
-            <%= button_to 'Ready', ready_path(@game_state), remote: true %>
+            <%= button_to 'Ready', ready_path(@game_state) %>
           <% end %>
         <% end %>
       </li>
@@ -37,7 +37,7 @@
     <!-- SCRAP FORM -->
     <p>
       <b>Take Scrap:</b>
-      <%= form_tag("/game_states/#{@game_state.id}/draw/scrap", remote: true) do %>
+      <%= form_tag("/game_states/#{@game_state.id}/draw/scrap") do %>
       <%= token_tag nil %>
       <select name="card_id">
         <option>Choose a scrap</option>
@@ -52,7 +52,7 @@
     <!-- BLUEPRINT FORM  -->
     <p>
       <b>Take Blueprint:</b>
-      <%= form_tag("/game_states/#{@game_state.id}/draw/blueprint", remote: true) do %>
+      <%= form_tag("/game_states/#{@game_state.id}/draw/blueprint") do %>
         <%= token_tag nil %>
         <select id="blueprint-select" name="card_id">
           <option>Choose a blueprint</option>
@@ -73,7 +73,7 @@
     </p>
 
     <p>
-      <%= form_tag("/game_states/#{@game_state.id}/discard_raw", remote: true) do %>
+      <%= form_tag("/game_states/#{@game_state.id}/discard_raw") do %>
         <%= token_tag nil %>
         <input type="number" name="raw_amount" min="0">
         <input type="submit" value="Discard Raw"></input>
@@ -89,9 +89,9 @@
             <% if !!hold.scrap %>
               <li>
                 <%= hold.scrap.name %>
-                <%= button_to 'Sell', sell_path(@game_state, hold), remote: true %>
+                <%= button_to 'Sell', sell_path(@game_state, hold) %>
                 |
-                <%= button_to 'Discard', scrap_hold_path(hold), remote: true, data: { confirm: 'Are you sure?' }, method: :delete %>
+                <%= button_to 'Discard', scrap_hold_path(hold), data: { confirm: 'Are you sure?' }, method: :delete %>
               </li>
             <% end %>
           <% end %>
@@ -110,9 +110,9 @@
               <% if !!hold.blueprint %>
                 <li>
                   <%= hold.blueprint.name %>
-                  <%= button_to 'Build', build_path(@game_state, hold), remote: true %>
+                  <%= button_to 'Build', build_path(@game_state, hold) %>
                   |
-                  <%= button_to 'Discard', blueprint_hold_path(hold), remote: true, data: { confirm: 'Are you sure?' }, method: :delete  %>
+                  <%= button_to 'Discard', blueprint_hold_path(hold), data: { confirm: 'Are you sure?' }, method: :delete  %>
                 </li>
               <% end %>
             <% end %>
@@ -139,155 +139,3 @@
   </section>
 
   <%= link_to 'Leave Game', game_state_path(@game_state), data: { confirm: 'Are you sure?' }, method: :delete %>
-
-  <script>
-    (function () {
-      var stateSource = new EventSource(
-        "/game_states/" + <%= @game_state.id %> + ".json"
-      );
-
-      var closeHandler = function () {
-        stateSource.close();
-
-        return null;
-      }
-
-      stateSource.addEventListener("update", function (event) {
-        var data = JSON.parse(event.data);
-
-        renderPlayers(data.players, data.started);
-
-        if (data.alert) alert(data.alert);
-        if (data.started) {
-          if(!$("#game-state").html().match(/\S+/)) renderGameStateScaffold();
-          renderBlueprintSelect(data.available_blueprints);
-
-          renderRawMaterials(data.raw);
-          renderHeldScraps(data.scraps);
-          renderHeldBlueprints(data.blueprints);
-          renderBuiltModules(data.scrapper_modules);
-        }
-      });
-
-      window.onbeforeunload = closeHandler;
-      window.onunload = closeHandler;
-
-      function renderBlueprintSelect(blueprints) {
-        if (blueprints && blueprints.length) {
-          var blueprintFormHTML = "<option>Choose a blueprint</option>";
-
-          for (var blueprint of blueprints) {
-            blueprint = JSON.parse(blueprint);
-
-            blueprintFormHTML += "<option value='" +
-              blueprint.id + "'>" +
-              blueprint.name + "</option>"
-          }
-
-          $("#blueprint-select").html(blueprintFormHTML);
-        }
-      }
-
-      function renderGameStateScaffold() {
-        $("#game-state").html(
-          `<p><b>Take Scrap:</b><%= form_tag("/game_states/#{@game_state.id}/draw/scrap", remote: true) do %><%= token_tag nil %><select name="card_id"></select><input type="submit" value="Draw"></input><% end %></p><p><b>Take Blueprint:</b><%= form_tag("/game_states/#{@game_state.id}/draw/blueprint", remote: true) do %><%= token_tag nil %><select id="blueprint-select" name="card_id"></select><input type="submit" value="Draw"></input><% end %></p><p style="color: blue;"><b>Held Blueprints:</b><ul id="held-blueprints" style="color: blue;"></ul></p><p style="color: green;"><b>Built Scrapper Modules:</b><ul id="held-modules"></ul></p><p style="color: gray;"><b>Held Scraps:</b><ul id="held-scraps" style="color: gray;"></ul><p>`
-        )
-      }
-
-      function renderHeldScraps(scraps) {
-        if (scraps) {
-          var heldScrapsHTML = "";
-
-          if (scraps.length) {
-            for (var scrap of scraps) {
-              scrap = JSON.parse(scrap);
-
-              heldScrapsHTML += "<li>" + scrap.name + ` <form class="button_to" method="post" action="/game_states/<%= @game_state.id %>/sell/` + scrap.id + `" data-remote="true"><input type="submit" value="Sell"><%= token_tag nil %></form> |` + ` <form class="button_to" method="delete" action="/scrap_holds/` + scrap.id + `" data-remote="true"><input type="submit" value="Discard"><%= token_tag nil %></form>` + "</li>"
-            }
-          } else
-            heldScrapsHTML = "No Held Scraps";
-
-          $("#held-scraps").html(heldScrapsHTML);
-        }
-      }
-
-      function renderHeldBlueprints(blueprints) {
-        if (blueprints) {
-          var heldBlueprintsHTML = "";
-
-          if (blueprints.length) {
-            for (var blueprint of blueprints) {
-              blueprint = JSON.parse(blueprint);
-
-              heldBlueprintsHTML += "<li>" + blueprint.name + ` <form class="button_to" method="post" action="/game_states/<%= @game_state.id %>/build/` + blueprint.id + `" data-remote="true"><input type="submit" value="Build"><%= token_tag nil %></form> | <form class="button_to" method="delete" action="/blueprint_holds/` + blueprint.id + `" data-remote="true"><input type="submit" value="Discard"><%= token_tag nil %></form>` + "</li>"
-            }
-          } else heldBlueprintsHTML = "No Held Blueprints";
-
-          $("#held-blueprints").html(heldBlueprintsHTML);
-        }
-      }
-
-      function renderBuiltModules(modules) {
-        if (modules) {
-          var heldModulesHTML = "";
-          if (modules.length) {
-
-            for (var scrapperModule of modules) {
-              scrapperModule = JSON.parse(scrapperModule);
-
-              heldModulesHTML += "<li>" + scrapperModule.name + "</li>";
-            }
-          } else
-            heldModulesHTML = "No Held Modules";
-
-          $("#held-modules").html(heldModulesHTML);
-        }
-      }
-
-      function renderPlayers(players, gameStarted) {
-        if (players) {
-          var playerHTML = "";
-
-          for (var player of players) {
-            player = JSON.parse(player);
-
-            playerHTML += "<li><span";
-            playerHTML += player.isMyTurn
-              ? " style='color: green;'>"
-              : ">";
-            playerHTML += player.email + "</span>";
-
-            if (player.id === <%= current_player.id %>) {
-              playerHTML += "<b> (me)</b>";
-
-              if (player.isMyTurn) {
-                playerHTML += `<%= button_to 'End Turn', end_turn_path(@game_state), remote: true %>`
-              }
-            }
-
-            if (!gameStarted) {
-              if (player.isReady) {
-                playerHTML += "<span style='color: green;'> Ready!</span>";
-              }
-
-              if (player.id === <%= current_player.id %> && !player.isReady) {
-                playerHTML += `<%= button_to 'Ready', ready_path(@game_state), remote: true %>`
-              }
-            }
-
-            playerHTML += "</li>";
-          }
-
-          $("#current-players").html(playerHTML);
-        }
-      }
-
-      function renderRawMaterials(raw) {
-        if (raw) {
-          var rawMaterialsHTML = "<b>Raw Materials:</b> " + raw;
-
-          $("#player-materials").html(rawMaterialsHTML);
-        }
-      }
-    })();
-  </script>
