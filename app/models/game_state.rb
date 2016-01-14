@@ -2,6 +2,8 @@ class GameState < ActiveRecord::Base
 	belongs_to :game
 	belongs_to :player
 
+	has_many :messages
+
 	has_many :module_holds
 	has_many :scrapper_modules, through: :module_holds
 

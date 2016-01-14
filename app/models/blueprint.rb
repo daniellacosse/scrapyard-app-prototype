@@ -102,8 +102,4 @@ class Blueprint < ActiveRecord::Base
 	def rough_cost
 		rank.to_i * Math.log(requirements.map(&:override_value).map(&:to_i).sum)
 	end
-
-	def to_json
-		{ name: name, id: id }.to_json
-	end
 end

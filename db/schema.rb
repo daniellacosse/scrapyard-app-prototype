@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20151127170440) do
+ActiveRecord::Schema.define(version: 20160114032239) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -19,6 +19,7 @@ ActiveRecord::Schema.define(version: 20151127170440) do
   create_table "blueprint_holds", force: :cascade do |t|
     t.integer  "blueprint_id"
     t.integer  "game_state_id"
+    t.integer  "game_id"
     t.datetime "created_at",    null: false
     t.datetime "updated_at",    null: false
   end
@@ -62,13 +63,11 @@ ActiveRecord::Schema.define(version: 20151127170440) do
     t.integer  "player_id"
     t.integer  "player_number"
     t.integer  "game_id"
-    t.integer  "raw",               default: 0
-    t.integer  "stream_id"
-    t.string   "connection_string"
+    t.integer  "raw",           default: 0
     t.boolean  "is_ready"
     t.boolean  "is_my_turn"
-    t.datetime "created_at",                    null: false
-    t.datetime "updated_at",                    null: false
+    t.datetime "created_at",                null: false
+    t.datetime "updated_at",                null: false
   end
 
   create_table "games", force: :cascade do |t|
@@ -76,6 +75,14 @@ ActiveRecord::Schema.define(version: 20151127170440) do
     t.boolean  "has_started", default: false
     t.datetime "created_at",                  null: false
     t.datetime "updated_at",                  null: false
+  end
+
+  create_table "messages", force: :cascade do |t|
+    t.integer  "game_state_id"
+    t.string   "text"
+    t.boolean  "is_viewed",     default: false
+    t.datetime "created_at",                    null: false
+    t.datetime "updated_at",                    null: false
   end
 
   create_table "module_effects", force: :cascade do |t|

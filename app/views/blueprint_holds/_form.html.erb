@@ -1,0 +1,23 @@
+<% @blueprint_hold ||= BlueprintHold.new %>
+
+<%= form_for [@game_state, @blueprint_hold] do |f| %>
+  <% if @blueprint_hold.errors.any? %>
+    <div id="error_explanation">
+      <h2><%= pluralize(@blueprint_hold.errors.count, "error") %> prohibited this game from being saved:</h2>
+
+      <ul>
+      <% @blueprint_hold.errors.full_messages.each do |message| %>
+        <li><%= message %></li>
+      <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="field">
+    <%= f.label :batch_ids %><br>
+    <%= f.text_field :batch_ids %>
+  </div>
+  <div class="actions">
+    <%= f.submit %>
+  </div>
+<% end %>
