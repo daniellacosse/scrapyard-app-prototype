@@ -13,7 +13,7 @@
       <tr>
         <td><%= game.guid %></td>
         <% if !game.has_started %>
-          <td><%= link_to 'Join', game_game_states_path(game), method: :post =%>
+          <td><%= button_to 'Join', game_game_states_path(game) %>
         <% else %>
           <td style="color: green;">In Progress</td>
         <% end %>

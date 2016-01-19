@@ -16,17 +16,17 @@
         <% if player_state.player.id == current_player.id %>
           <b> (me)</b>
           <% if player_state.is_my_turn %>
-            <%= button_to 'End Turn', edit_game_state_path(@game_state), method: :put, params: { is_my_turn: false } %>
+            <%= button_to 'End Turn', game_state_path(@game_state), method: :put, params: { is_my_turn: false } %>
           <% end %>
-        <% else %>
-          <%= button_to 'Trade', new_game_state_trade_path(player_state) %>
+        <% elsif @game_state.game.has_started %>
+          <%= link_to 'Trade', new_game_state_trade_path(player_state) %>
         <% end %>
         <% unless @game_state.game.has_started %>
           <% if player_state.is_ready %>
             <span style="color: green;"> Ready!</span>
           <% end %>
           <% if player_state.player.id == current_player.id && !player_state.is_ready %>
-            <%= button_to 'Ready', edit_game_state_path(@game_state), method: :put, params: { is_ready: true }%>
+            <%= button_to 'Ready', game_state_path(@game_state), method: :put, params: { is_ready: true }%>
           <% end %>
         <% end %>
       </li>
@@ -84,7 +84,7 @@
               <% if !!hold.blueprint %>
                 <li>
                   <%= hold.blueprint.name %>
-                  <%= button_to 'Build', new_module_hold_path(), params: { build: true } %>
+                  <%= button_to 'Build', new_blueprint_hold_module_hold_path(hold), params: { build: true } %>
                   |
                   <%= button_to 'Discard', hold, method: :delete, data: { confirm: 'Are you sure?' } %>
                 </li>
@@ -135,4 +135,4 @@
     <% end %>
   </section>
 
-  <%= link_to 'Leave Game', game_state_path(@game_state), data: { confirm: 'Are you sure?' }, method: :delete %>
+  <%= button_to 'Leave Game', game_state_path(@game_state), data: { confirm: 'Are you sure?' }, method: :delete %>

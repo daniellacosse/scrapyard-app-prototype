@@ -4,12 +4,16 @@ class TradesController < ApplicationController
   # GET /game_states/:game_state_id/trades/new
   def new
     @trade = Trade.new
+    @game_state = GameState.find(params[:game_state_id])
     @proposer_state = GameState.find(params[:game_state_id])
   end
 
   # GET /trades/:id/edit
   def edit
     @proposer_state = @trade.proposing_state
+  end
+
+  def show
   end
 
   # POST /game_states/:game_state_id/trades

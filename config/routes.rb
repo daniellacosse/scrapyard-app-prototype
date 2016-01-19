@@ -1,14 +1,11 @@
 Rails.application.routes.draw do
-  resources :trades
-  resources :players
   devise_for :players
 
   resources :games do
-    resources :game_states, shallow: true do
-      resources :trades, shallow: true
-      resources :scrap_holds, shallow: true
-      resources :blueprint_holds, shallow: true do
-        resources :module_holds, shallow: true
+    resources :game_states, shallow: true, except: [:new, :edit, :index] do
+      resources :scrap_holds, :trades, shallow: true, except: :index
+      resources :blueprint_holds, shallow: true, except: :index do
+        resources :module_holds, shallow: true, except: :index
       end
     end
   end
