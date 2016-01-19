@@ -1,0 +1,42 @@
+<table>
+  <td>
+    <tr>
+      <b>(me)</b>
+    </tr>
+    <tr>
+      <%= ScrapHold.find(@trade.scrap_hold_cost).try(:name) %>
+    </tr>
+    <tr>
+      <%= BlueprintHold.find(@trade.blueprint_hold_cost).try(:name) %>
+    </tr>
+    <tr>
+      <%= ModuleHold.find(@trade.module_hold_cost).try(:name) %>
+    </tr>
+    <tr>
+      Raw Materials: <%= @trade.raw_cost %>
+    </tr>
+  </td>
+  <td>
+    <tr>
+      Proposing Player: <b><%= @trade.proposing_player.email %></b>
+    </tr>
+    <tr>
+      <%= ScrapHold.find(@trade.proposing_player_scrap_hold_cost).try(:name) %>
+    </tr>
+    <tr>
+      <%= BlueprintHold.find(@trade.proposing_player_blueprint_hold_cost).try(:name) %>
+    </tr>
+    <tr>
+      <%= ModuleHold.find(@trade.proposing_player_module_hold_cost).try(:name) %>
+    </tr>
+    <tr>
+      Raw Materials: <%= @trade.proposing_player_raw_cost %>
+    </tr>
+  </td>
+</table>
+
+<%= link_to 'Counter Offer', edit_trade_path(@trade) %>
+<%= button_to 'Accept', trade_path(@trade), method: :put, params: { is_agreed: true } %>
+<%= button_to 'Decline', trade_path(@trade), method: :delete, data: { confirm: 'Are you sure?' } %>
+
+<%= link_to 'Back', game_state_path(current_player.game_state) %>

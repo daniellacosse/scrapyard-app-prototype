@@ -1,0 +1,61 @@
+<%= form_for [@game_state, @trade] do |f| %>
+  <% if @trade.errors.any? %>
+    <div id="error_explanation">
+      <h2><%= pluralize(@trade.errors.count, "error") %> prohibited this trade from being saved:</h2>
+
+      <ul>
+      <% @trade.errors.full_messages.each do |message| %>
+        <li><%= message %></li>
+      <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="actions">
+    <table>
+      <td>
+        <tr>
+          <b>(me)</b>
+        </tr>
+        <tr>
+          <%= f.label :scrap_hold_cost %>
+          <%= f.radio_group name: :scrap_hold_cost, values: @game_state.include(:scrap).scrap_holds.map { |hold| [ hold.id, hold.scrap.name ] } %>
+        </tr>
+        <tr>
+          <%= f.label :blueprint_hold_cost %>
+          <%= f.radio_group name: :blueprint_hold_cost, values: @game_state.include(:blueprint).blueprint_holds.map { |hold| [ hold.id, hold.blueprint.name ] } %>
+        </tr>
+        <tr>
+          <%= f.label :module_hold_cost %>
+          <%= f.radio_group name: :module_hold_cost, values: @game_state.include(:scrapper_modules).module_holds.map { |hold| [ hold.id, hold.scrapper_module.name ] } %>
+        </tr>
+        <tr>
+          <%= f.label :raw_cost %>
+          <%= f.number :raw_cost %>
+        </tr>
+      </td>
+      <td>
+        <tr>
+          Proposing Player: <b><%= @trade.proposing_player.email %></b>
+        </tr>
+        <tr>
+          <%= f.label :proposing_player_scrap_hold_cost %>
+          <%= f.radio_group name: :proposing_player_scrap_hold_cost, values: @proposer_state.include(:scrap).scrap_holds.map { |hold| [ hold.id, hold.scrap.name ] } %>
+        </tr>
+        <tr>
+          <%= f.label :proposing_player_blueprint_hold_cost %>
+          <%= f.radio_group name: :proposing_player_blueprint_hold_cost, values: @proposer_state.include(:blueprint).blueprint_hold.map { |hold| [ hold.id, hold.blueprint.name ] } %>
+        </tr>
+        <tr>
+          <%= f.label :proposing_player_module_hold_cost %>
+          <%= f.radio_group name: :proposing_player_module_hold_cost, values: @proposer_state.include(:scrapper_modules).module_holds.map { |hold| [ hold.id, hold.scrapper_module.name ] } %>
+        </tr>
+        <tr>
+          <%= f.label :proposing_player_raw_cost %>
+          <%= f.number :proposing_player_raw_cost %>
+        </tr>
+      </td>
+    </table>
+    <%= f.submit %>
+  </div>
+<% end %>
