@@ -1,4 +1,4 @@
-class Blueprint < ActiveRecord::Base
+class Blueprint < ActiveRecord::Base	
 	has_one :scrapper_module
 
 	has_many :blueprint_requirements

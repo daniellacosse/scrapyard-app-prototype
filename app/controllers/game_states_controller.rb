@@ -1,7 +1,8 @@
 class GameStatesController < ApplicationController
   before_action :authenticate_player!
-  before_action :set_state
+  before_action :set_state, only: [:show, :update, :destroy]
 
+  # GET /game_states/:id
   def show
     @game_state.messages.each do |message|
       unless message.is_viewed
@@ -15,38 +16,48 @@ class GameStatesController < ApplicationController
     render :show
   end
 
-  # POST /game_states/:id/discard_raw
-  def discard_raw
-    @game_state.update raw: @game_state.raw - params[:raw_amount].to_i
+  # POST /games/:game_id/game_states
+  def create
+    @game = Game.find(params[:game_id])
 
-    redirect_to game_state_path(@game_state)
-  end
+    if @game.players.count > 4
+      flash[:error] = "This game is full!"
+      redirect_to games_url
+    elsif @game.has_started
+      flash[:error] = "This game is already underway!"
+      redirect_to games_url
+    else
+      @game_state = GameState.find_or_create_by(
+        player_id: current_player.id, game_id: @game.id
+      )
 
-  # POST /game_states/:id/ready
-  def ready
-    @game_state.set_ready
-
-    redirect_to game_state_path(@game_state)
-  end
-
-  # POST /game_states/:id/turn/end
-  def end_turn
-    @next_player_state = @game_state.siblings.find do |state|
-      state.player_number == @game_state.player_number + 1
+      redirect_to game_state_path(@game_state), notice: "Joined Game!"
     end
+  end
 
-    unless @next_player_state
+  # PUT/PATCH /game_states/:id
+  def update
+    if params[:is_ready]
+      @game_state.set_ready
+    elsif params[:is_my_turn] == false
       @next_player_state = @game_state.siblings.find do |state|
-        state.player_number == 0
+        state.player_number == @game_state.player_number + 1
       end
-    end
 
-    @game_state.update(is_my_turn: false)
-    @next_player_state.update(is_my_turn: true)
+      unless @next_player_state
+        @next_player_state = @game_state.siblings.find do |state|
+          state.player_number == 0
+        end
+      end
+
+      @game_state.update(is_my_turn: false)
+      @next_player_state.update(is_my_turn: true)
+    end
 
     redirect_to game_state_path(@game_state)
   end
 
+  # DELETE /game_states/:id
   def destroy
     @game_state.destroy
 

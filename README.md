@@ -5,7 +5,6 @@ just a rough prototype for playtesting purposes. Will become an API (someday) wi
 TODO (in decreasing priority):
 
 * build (lets player pick from all possible combinations)
-	* remove "discard raw"
 * trades
 * allow/disallow actions based on condition
 * more notif cases

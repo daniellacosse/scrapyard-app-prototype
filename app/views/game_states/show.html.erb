@@ -16,15 +16,17 @@
         <% if player_state.player.id == current_player.id %>
           <b> (me)</b>
           <% if player_state.is_my_turn %>
-            <%= button_to 'End Turn', end_turn_path(@game_state) %>
+            <%= button_to 'End Turn', edit_game_state_path(@game_state), method: :put, params: { is_my_turn: false } %>
           <% end %>
+        <% else %>
+          <%= button_to 'Trade', new_game_state_trade_path(player_state) %>
         <% end %>
         <% unless @game_state.game.has_started %>
           <% if player_state.is_ready %>
             <span style="color: green;"> Ready!</span>
           <% end %>
           <% if player_state.player.id == current_player.id && !player_state.is_ready %>
-            <%= button_to 'Ready', ready_path(@game_state) %>
+            <%= button_to 'Ready', edit_game_state_path(@game_state), method: :put, params: { is_ready: true }%>
           <% end %>
         <% end %>
       </li>
@@ -50,14 +52,6 @@
     <p id="player-materials" style="color: red;">
       <b>Raw Materials:</b>
       <%= @game_state[:raw] || 0 %>
-    </p>
-
-    <p>
-      <%= form_tag("/game_states/#{@game_state.id}/discard_raw") do %>
-        <%= token_tag nil %>
-        <input type="number" name="raw_amount" min="0">
-        <input type="submit" value="Discard Raw"></input>
-      <% end %>
     </p>
 
     <!-- HELD SCRAPS -->
@@ -90,7 +84,7 @@
               <% if !!hold.blueprint %>
                 <li>
                   <%= hold.blueprint.name %>
-                  <%= button_to 'Build', hold, method: :delete, params: { build: true } %>
+                  <%= button_to 'Build', new_module_hold_path(), params: { build: true } %>
                   |
                   <%= button_to 'Discard', hold, method: :delete, data: { confirm: 'Are you sure?' } %>
                 </li>
@@ -112,6 +106,23 @@
             <% end %>
           <% else %>
             No Built Modules
+          <% end %>
+        </ul>
+      </p>
+
+      <!-- TRADE PROPOSALS -->
+      <p>
+        <b>Trade Proposals:</b>
+        <ul id="trade-proposals">
+          <% if @game_state.trades.count > 0 %>
+            <% @game_state.trades.each do |trade| %>
+            <li>
+              <%= trade.proposing_player.email %>
+              <%= link_to 'Review', trade_path(trade) %>
+            </li>
+            <% end %>
+          <% else %>
+            No Trade Proposals
           <% end %>
         </ul>
       </p>

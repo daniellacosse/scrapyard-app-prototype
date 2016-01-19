@@ -9,21 +9,8 @@ class GamesController < ApplicationController
     @games = Game.all
   end
 
-  # POST /games/1/join
+  # POST /games/:id/join
   def join
-    if @game.players.count > 4
-      flash[:error] = "This game is full!"
-      redirect_to games_url
-    elsif @game.has_started
-      flash[:error] = "This game is already underway!"
-      redirect_to games_url
-    else
-      @game_state = GameState.find_or_create_by(
-        player_id: current_player.id, game_id: @game.id
-      )
-
-      redirect_to game_state_path(@game_state), notice: "Joined Game!"
-    end
   end
 
   # GET /games/new
@@ -31,7 +18,7 @@ class GamesController < ApplicationController
     @game = Game.new(guid: (rand * 10_000).ceil)
   end
 
-  # GET /games/1/edit
+  # GET /games/:id/edit
   def edit
   end
 
@@ -50,7 +37,7 @@ class GamesController < ApplicationController
     end
   end
 
-  # PUT /games/1
+  # PUT /games/:id
   def update
     respond_to do |format|
       if @game.update(game_params)
@@ -63,7 +50,7 @@ class GamesController < ApplicationController
     end
   end
 
-  # DELETE /games/1
+  # DELETE /games/:id
   def destroy
     @game.destroy
     respond_to do |format|
