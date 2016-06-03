@@ -1,138 +1,180 @@
-<p>
-  <strong>Id #:</strong>
-  <%= @game_state.game.guid %>
-</p>
+<h1>
+    <strong>Game #</strong>
+    <%= @game_state.game.guid %>
+</h1>
 
 <p>
-  <b>Players:</b>
-  <ul id="current-players">
-    <% @game_state.siblings.each do |player_state| %>
-      <li>
-        <% if player_state.is_my_turn %>
-          <span style="color: green;"><%= player_state.player.email %></span>
+    <h3>Players:</h3>
+    <ul id="current-players">
+        <% @game_state.siblings.each do |player_state| %>
+        <li>
+            <% if player_state.is_my_turn %>
+            <span style="color: green;"><%= player_state.player.email %></span>
         <% else %>
-          <span><%= player_state.player.email %></span>
-        <% end %>
-        <% if player_state.player.id == current_player.id %>
-          <b> (me)</b>
-          <% if player_state.is_my_turn %>
+            <span><%= player_state.player.email %></span>
+            <% end %>
+            <% if player_state.player.id == current_player.id %>
+            <b>
+                (me)</b>
+            <% if player_state.is_my_turn %>
             <%= button_to 'End Turn', game_state_path(@game_state), method: :put, params: { is_my_turn: false } %>
-          <% end %>
-        <% elsif @game_state.game.has_started %>
-          <%= link_to 'Trade', new_game_state_trade_path(player_state) %>
-        <% end %>
-        <% unless @game_state.game.has_started %>
-          <% if player_state.is_ready %>
-            <span style="color: green;"> Ready!</span>
-          <% end %>
-          <% if player_state.player.id == current_player.id && !player_state.is_ready %>
+            <% end %>
+            <% elsif @game_state.game.has_started %>
+            <%= link_to 'Trade', new_game_state_trade_path(player_state) %>
+            <% end %>
+            <% unless @game_state.game.has_started %>
+            <% if player_state.is_ready %>
+            <span style="color: green;">
+                Ready!</span>
+            <% end %>
+            <% if player_state.player.id == current_player.id && !player_state.is_ready %>
             <%= button_to 'Ready', game_state_path(@game_state), method: :put, params: { is_ready: true }%>
-          <% end %>
+            <% end %>
+            <% end %>
+        </li>
         <% end %>
-      </li>
-    <% end %>
-  </ul>
+    </ul>
 </p>
 
 <section id="game-state">
-  <% if @game_state.game.has_started %>
-    <!-- SCRAP FORM -->
-    <p>
-      <b>Take Scraps:</b>
-      <%= render "scrap_holds/form", game_state: @game_state %>
-    </p>
+    <% if @game_state.game.has_started %>
 
-    <!-- BLUEPRINT FORM  -->
-    <p>
-      <b>Take Blueprints:</b>
-      <%= render "blueprint_holds/form", game_state: @game_state %>
-    </p>
+    <div class="panel panel-default">
+        <div class="panel-heading" role="tab" id="headingOne">
+            <h4 class="panel-title">
+                <a data-toggle="collapse" data-parent="#accordion" href="#takeCards" aria-expanded="true" aria-controls="takeCards">
+                    Take Cards
+                </a>
+            </h4>
+        </div>
+        <div id="takeCards" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingOne">
+            <!-- SCRAP FORM -->
+            <p>
+                <%= render "scrap_holds/form", game_state: @game_state %>
+            </p>
+
+            <!-- BLUEPRINT FORM  -->
+            <p>
+                <%= render "blueprint_holds/form", game_state: @game_state %>
+            </p>
+        </div>
+    </div>
 
     <!-- RAW MATERIALS -->
     <p id="player-materials" style="color: red;">
-      <b>Raw Materials:</b>
-      <%= @game_state[:raw] || 0 %>
+        <h3>
+            Raw Materials:
+            <%= @game_state[:raw] || 0 %>
+        </h3>
     </p>
 
-    <!-- HELD SCRAPS -->
-    <p style="color: gray;">
-      <b>Held Scraps:</b>
-      <ul id="held-scraps" style="color: gray;">
-        <% if @game_state.scrap_holds.count > 0 %>
-          <% @game_state.scrap_holds.each do |hold| %>
-            <% if !!hold.scrap %>
-              <li>
-                <%= hold.scrap.name %>
-                <%= button_to 'Sell', hold, method: :delete, params: { sell: true }  %>
-                |
-                <%= button_to 'Discard', hold, method: :delete, data: { confirm: 'Are you sure?' } %>
-              </li>
-            <% end %>
-          <% end %>
-        <% else %>
-          No Held Scraps
-        <% end %>
-      </ul>
-    <p>
+    <div id="accordion" role="tablist" aria-multiselectable="true">
+        <div class="panel panel-default">
+            <div class="panel-heading" role="tab" id="headingOne">
+                <h4 class="panel-title">
+                    <a data-toggle="collapse" data-parent="#accordion" href="#heldScraps" aria-expanded="true" aria-controls="heldScraps">
+                        Held Scraps
+                    </a>
+                </h4>
+            </div>
+            <div id="heldScraps" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingOne">
+                <ul id="held-scraps" style="color: gray;">
+                    <% if @game_state.scrap_holds.count > 0 %>
+                    <% @game_state.scrap_holds.each do |hold| %>
+                    <% if !!hold.scrap %>
+                    <li>
+                        <%= hold.scrap.name %>
+                        <%= button_to 'Sell', hold, method: :delete, params: { sell: true }  %>
+                        |
+                        <%= button_to 'Discard', hold, method: :delete, data: { confirm: 'Are you sure?' } %>
+                    </li>
+                    <% end %>
+                    <% end %>
+                <% else %>
+                    No Held Scraps
+                    <% end %>
+                </ul>
+            </div>
+        </div>
+        <div class="panel panel-default">
+            <div class="panel-heading" role="tab" id="headingTwo">
+                <h4 class="panel-title">
+                    <a class="collapsed" data-toggle="collapse" data-parent="#accordion" href="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                        Held Blueprints
+                    </a>
+                </h4>
+            </div>
+            <div id="collapseTwo" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingTwo">
+                <ul id="held-blueprints" style="color: blue;">
+                    <% if @game_state.blueprint_holds.count > 0 %>
+                    <% @game_state.blueprint_holds.each do |hold| %>
+                    <% if !!hold.blueprint %>
+                    <li>
+                        <%= hold.blueprint.name %>
+                        <%= button_to 'Build', new_blueprint_hold_module_hold_path(hold), params: { build: true } %>
+                        |
+                        <%= button_to 'Discard', hold, method: :delete, data: { confirm: 'Are you sure?' } %>
+                    </li>
+                    <% end %>
+                    <% end %>
+                <% else %>
+                    No Held Blueprints
+                    <% end %>
+                </ul>
+            </div>
+        </div>
+        <div class="panel panel-default">
+            <div class="panel-heading" role="tab" id="headingThree">
+                <h4 class="panel-title">
+                    <a class="collapsed" data-toggle="collapse" data-parent="#accordion" href="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                        Held Scrapper Guts
+                    </a>
+                </h4>
+            </div>
+            <div id="collapseThree" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingThree">
+                <ul id="held-modules">
+                    <% if @game_state.module_holds.count > 0 %>
+                    <% @game_state.module_holds.each do |hold| %>
+                    <li><%= hold.scrapper_module.name %></li>
+                    <% end %>
+                <% else %>
+                    No Built Modules
+                    <% end %>
+                </ul>
+            </div>
+        </div>
+        <div class="panel panel-default">
+            <div class="panel-heading" role="tab" id="headingFour">
+                <h4 class="panel-title">
+                    <a class="collapsed" data-toggle="collapse" data-parent="#accordion" href="#tradeProposals" aria-expanded="false" aria-controls="tradeProposals">
+                        Trade Proposals
+                    </a>
+                </h4>
+            </div>
+            <div id="tradeProposals" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingFour">
+                <ul id="trade-proposals">
+                    <% if @game_state.trades.count > 0 %>
+                    <% @game_state.trades.each do |trade| %>
+                    <li>
+                        <%= trade.proposing_player.email %>
+                        <%= link_to 'Review', trade_path(trade) %>
+                    </li>
+                    <% end %>
+                <% else %>
+                    No Trade Proposals
+                    <% end %>
+                </ul>
+            </div>
+        </div>
+    </div>
 
-      <!-- HELD BLUEPRINTS -->
-      <p style="color: blue;">
-        <b>Held Blueprints:</b>
-        <ul id="held-blueprints" style="color: blue;">
-          <% if @game_state.blueprint_holds.count > 0 %>
-            <% @game_state.blueprint_holds.each do |hold| %>
-              <% if !!hold.blueprint %>
-                <li>
-                  <%= hold.blueprint.name %>
-                  <%= button_to 'Build', new_blueprint_hold_module_hold_path(hold), params: { build: true } %>
-                  |
-                  <%= button_to 'Discard', hold, method: :delete, data: { confirm: 'Are you sure?' } %>
-                </li>
-              <% end %>
-            <% end %>
-          <% else %>
-            No Held Blueprints
-          <% end %>
-        </ul>
-      </p>
-
-      <!-- HELD SCRAPPER MODULES -->
-      <p style="color: green;">
-        <b>Built Scrapper Modules:</b>
-        <ul id="held-modules">
-          <% if @game_state.module_holds.count > 0 %>
-            <% @game_state.module_holds.each do |hold| %>
-            <li><%= hold.scrapper_module.name %></li>
-            <% end %>
-          <% else %>
-            No Built Modules
-          <% end %>
-        </ul>
-      </p>
-
-      <!-- TRADE PROPOSALS -->
-      <p>
-        <b>Trade Proposals:</b>
-        <ul id="trade-proposals">
-          <% if @game_state.trades.count > 0 %>
-            <% @game_state.trades.each do |trade| %>
-            <li>
-              <%= trade.proposing_player.email %>
-              <%= link_to 'Review', trade_path(trade) %>
-            </li>
-            <% end %>
-          <% else %>
-            No Trade Proposals
-          <% end %>
-        </ul>
-      </p>
-    <% else %>
-      <ul>
+<% else %>
+    <ul>
         <li>Keep refreshing the page.</li>
         <li>Don't click ready until everyone is listed here!</li>
         <li>Then, refresh until you can see the UI.</li>
-      </ul>
+    </ul>
     <% end %>
-  </section>
+</section>
 
-  <%= button_to 'Leave Game', game_state_path(@game_state), data: { confirm: 'Are you sure?' }, method: :delete %>
+<%= button_to 'Leave Game', game_state_path(@game_state), data: { confirm: 'Are you sure?' }, method: :delete %>

@@ -1,0 +1,102 @@
+/*
+ * This is a manifest file that'll be compiled into application.css, which will include all the files
+ * listed below.
+ *
+ * Any CSS and SCSS file within this directory, lib/assets/stylesheets, vendor/assets/stylesheets,
+ * or any plugin's vendor/assets/stylesheets directory can be referenced here using a relative path.
+ *
+ * You're free to add application-wide styles to this file and they'll appear at the bottom of the
+ * compiled file so the styles you add here take precedence over styles defined in any styles
+ * defined in the other CSS/SCSS files in this directory. It is generally better to create a new
+ * file per style scope.
+ *
+ *= require_tree .
+ *= require_self
+ */
+
+@import "bootstrap-sprockets";
+@import "bootstrap";
+
+.notice {
+  color: green;
+  background-color: lightgreen;
+}
+
+.error {
+  color: red;
+  background-color: lightred;
+}
+
+body {
+  display: block;
+  max-width: 600px;
+  width: 100%;
+  margin: auto;
+  padding: 20px;
+}
+
+h1, h2 {
+  text-align: center;
+  font-weight: bold;
+}
+
+form,
+.field,
+input[type="text"],
+input[type="email"],
+input[type="password"],
+.notice,
+.error {
+  width: 100%;
+}
+
+form.button_to {
+  width: auto;
+}
+
+input {
+  padding: 10px 20px;
+  border: 1px solid gray;
+  border-radius: 5px;
+  outline: 0;
+
+  background-color: #f6f6f6;
+
+  &:focus {
+    border: 1px solid blue;
+  }
+}
+
+input[type="submit"] {
+  display: inline-block;
+  padding: 5px;
+
+  &:hover {
+    border: 1px solid blue;
+  }
+}
+
+a:hover {
+  background-color: transparent;
+  text-decoration: underline;
+}
+
+td, .notice, .error {
+  padding: 5px;
+}
+
+ul, li {
+  list-style-type: none;
+}
+
+ul {
+  padding: 0;
+}
+
+li {
+  padding: 10px 0;
+}
+
+.panel-collapse {
+  padding: 0 15px;
+}

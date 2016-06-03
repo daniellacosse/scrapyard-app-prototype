@@ -8,6 +8,8 @@ gem "puma"
 gem "rails_12factor"
 gem "rails", "4.2.4"
 gem "rspec", group: :test
+gem "bootstrap-sass"
+gem "jquery-rails"
 gem "sass-rails", "~> 5.0"
 gem "sdoc", "~> 0.4.0", group: :doc
 gem "turbolinks"
