@@ -3,16 +3,17 @@ class CreateScrapperModules < ActiveRecord::Migration
     create_table :scrapper_modules do |t|
       t.integer :blueprint_id
 
+      t.integer :armor
+      t.string :damage_type
+      t.integer :damage
+      t.integer :mobility
       t.string :name
-      t.string :mod_type
-      t.string :armor
-      t.string :res
-      t.string :weight
-      t.string :gives_digging
-      t.string :gives_flying
-      t.string :weapon
-      t.string :weapon_dmg
-      t.string :weapon_acc
+      t.integer :range
+      t.integer :resilience
+      t.integer :spread
+      t.string :text
+      t.string :module_class
+      t.integer :weight
 
       t.timestamps null: false
     end

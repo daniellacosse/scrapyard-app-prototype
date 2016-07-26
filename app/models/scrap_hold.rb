@@ -8,7 +8,7 @@ class ScrapHold < ActiveRecord::Base
 		success = false
 
 		transaction do
-			new_value = game_state.raw.to_i + scrap.value.to_i
+			new_value = game_state.raw.to_i + value.to_i
 			success = game_state.update(raw: new_value) && self.destroy
 		end
 

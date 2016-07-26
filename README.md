@@ -1,6 +1,6 @@
 ### SCRAPYARD APP PROTOTYPE
 
-just a rough prototype for playtesting purposes. Will become an API (someday) with websockets
+just a rough prototype for playtesting purposes. Will become an API (someday)
 
 TODO (in decreasing priority):
 

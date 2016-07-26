@@ -8,7 +8,8 @@ class ScrapHoldsController < ApplicationController
       .split(/\s*[^a-zA-Z0-9]\s+|\s+/)
       .reject(&:empty?)
       .each do |id|
-        hold = ScrapHold.create(scrap_id: id.to_i)
+        scrap_id, scrap_value = *id.split("-")
+        hold = ScrapHold.create(scrap_id: scrap_id.to_i, value: scrap_value.to_i)
 
         if hold.persisted?
           scrap = hold.scrap

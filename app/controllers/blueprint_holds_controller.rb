@@ -9,6 +9,8 @@ class BlueprintHoldsController < ApplicationController
       .split(/\s*[^a-zA-Z0-9]\s+|\s+/)
       .reject(&:empty?)
       .each do |id|
+        # find by module class & id?
+
         hold = BlueprintHold.create(
           blueprint_id: id.to_i, game_id: @game.id
         )

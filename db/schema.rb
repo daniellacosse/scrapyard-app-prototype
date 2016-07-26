@@ -52,13 +52,6 @@ ActiveRecord::Schema.define(version: 20160119021850) do
     t.datetime "updated_at", null: false
   end
 
-  create_table "effects", force: :cascade do |t|
-    t.string   "description"
-    t.integer  "magnitude"
-    t.datetime "created_at",  null: false
-    t.datetime "updated_at",  null: false
-  end
-
   create_table "game_states", force: :cascade do |t|
     t.integer  "player_id"
     t.integer  "player_number"
@@ -83,13 +76,6 @@ ActiveRecord::Schema.define(version: 20160119021850) do
     t.boolean  "is_viewed",     default: false
     t.datetime "created_at",                    null: false
     t.datetime "updated_at",                    null: false
-  end
-
-  create_table "module_effects", force: :cascade do |t|
-    t.integer  "scrapper_module_id"
-    t.integer  "effect_id"
-    t.datetime "created_at",         null: false
-    t.datetime "updated_at",         null: false
   end
 
   create_table "module_holds", force: :cascade do |t|
@@ -142,16 +128,10 @@ ActiveRecord::Schema.define(version: 20160119021850) do
     t.datetime "updated_at",    null: false
   end
 
-  create_table "scrap_effects", force: :cascade do |t|
-    t.integer  "scrap_id"
-    t.integer  "effect_id"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-  end
-
   create_table "scrap_holds", force: :cascade do |t|
     t.integer  "scrap_id"
     t.integer  "game_state_id"
+    t.integer  "value"
     t.datetime "created_at",    null: false
     t.datetime "updated_at",    null: false
   end
@@ -166,29 +146,24 @@ ActiveRecord::Schema.define(version: 20160119021850) do
 
   create_table "scrapper_modules", force: :cascade do |t|
     t.integer  "blueprint_id"
+    t.integer  "armor"
+    t.string   "damage_type"
+    t.integer  "damage"
+    t.integer  "mobility"
     t.string   "name"
-    t.string   "mod_type"
-    t.string   "armor"
-    t.string   "res"
-    t.string   "weight"
-    t.string   "gives_digging"
-    t.string   "gives_flying"
-    t.string   "weapon"
-    t.string   "weapon_dmg"
-    t.string   "weapon_acc"
-    t.datetime "created_at",    null: false
-    t.datetime "updated_at",    null: false
+    t.integer  "range"
+    t.integer  "resilience"
+    t.integer  "spread"
+    t.string   "text"
+    t.string   "module_class"
+    t.integer  "weight"
+    t.datetime "created_at",   null: false
+    t.datetime "updated_at",   null: false
   end
 
   create_table "scraps", force: :cascade do |t|
     t.string   "name"
     t.string   "value"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-  end
-
-  create_table "targets", force: :cascade do |t|
-    t.string   "name"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end
@@ -207,13 +182,6 @@ ActiveRecord::Schema.define(version: 20160119021850) do
     t.integer  "proposing_player_module_hold_cost"
     t.datetime "created_at",                                          null: false
     t.datetime "updated_at",                                          null: false
-  end
-
-  create_table "weapon_targets", force: :cascade do |t|
-    t.integer  "scrapper_module_id"
-    t.integer  "target_id"
-    t.datetime "created_at",         null: false
-    t.datetime "updated_at",         null: false
   end
 
 end

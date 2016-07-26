@@ -1,28 +1,10 @@
-class Blueprint < ActiveRecord::Base	
+class Blueprint < ActiveRecord::Base
 	has_one :scrapper_module
 
 	has_many :blueprint_requirements
 	has_many :requirements, through: :blueprint_requirements
 
 	has_many :blueprint_holds
-
-	def self.rank_to_type_distribution
-		rank_distributions = {}
-
-		all
-			.group_by { |bp| bp.rank }
-			.each_pair do |rank, prints|
-				type_distributions = Hash[
-					prints
-						.group_by { |bp| bp.scrapper_module.mod_type }
-						.map { |type, prints| [type, prints.count] }
-				]
-
-				rank_distributions[rank] = type_distributions
-			end
-
-		rank_distributions
-	end
 
 	def add_requirement(requirement_data)
 		requirement = Requirement.create(
@@ -93,13 +75,5 @@ class Blueprint < ActiveRecord::Base
 		end
 
 		match
-	end
-
-	def rough_pcr
-		scrapper_module.power / rough_cost
-	end
-
-	def rough_cost
-		rank.to_i * Math.log(requirements.map(&:override_value).map(&:to_i).sum)
 	end
 end
