@@ -6,4 +6,8 @@ class Player < ActiveRecord::Base
 
   has_many :game_states, dependent: :destroy
   has_many :games, through: :game_states
+
+  def state_for_game(game)
+    game_states.to_a.find { |state| state.game_id == game.id }
+  end
 end

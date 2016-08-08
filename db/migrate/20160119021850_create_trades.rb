@@ -1,7 +1,7 @@
 class CreateTrades < ActiveRecord::Migration
   def change
     create_table :trades do |t|
-      t.boolean :is_agreed, default: true
+      t.boolean :is_agreed, default: false
 
       t.integer :game_state_id
       t.integer :proposing_player_state_id

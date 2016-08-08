@@ -7,24 +7,35 @@ class BlueprintHold < ActiveRecord::Base
 	validates_uniqueness_of :blueprint_id, scope: :game_id
 
 	def build_options
-		resource_pool = ResourcePool.new(game_state: game_state)
+		my_resource_pool = ResourcePool.new(game_state: game_state)
 
-		build_list resource_pool, blueprint.requirements, ResourcePool.new
+		build_list my_resource_pool, blueprint.requirements.to_a
 	end
 
 	private
-	def build_list(resource_pool, requirements, build_pool)
-		return build if resources.length <= 0
+	def build_list(resource_pool, requirements, build_pool = ResourcePool.new)
+		return build_pool if requirements.length <= 0
 
 		build_branches = []
 
-		requirements.first.options.each do |option|
+		requirement = requirements.first
+		override_pool = ResourcePool.new(raw: requirement.override_value)
+
+		requirement.options.each do |option|
 			option_pool = ResourcePool.new(option: option)
 
-			# close, but not quite. this doesn't do classes (that's really the kicker)
 			if resource_pool.contains? option_pool
 				build_branch = build_pool + option_pool
 				leftovers = resource_pool - option_pool
+
+				build_branches << build_list(
+					leftovers, requirements[1..-1], build_branch
+				)
+			end
+
+			if resource_pool.contains? override_pool
+				build_branch = build_pool + override_pool
+				leftovers = resource_pool - override_pool
 
 				build_branches << build_list(
 					leftovers, requirements[1..-1], build_branch
@@ -37,12 +48,14 @@ class BlueprintHold < ActiveRecord::Base
 end
 
 class ResourcePool
-	def initialize(params)
+	attr_reader :scraps, :raw
+
+	def initialize(params = {})
 		if params[:game_state]
-			@scraps = params[:game_state].scrap_holds.include(:scrap)
+			@scraps = params[:game_state].scrap_holds.includes(:scrap).to_a
 			@raw = params[:game_state].raw
 		elsif params[:option]
-			@scraps = params[:option].scraps + params[:option].class_types
+			@scraps = params[:option].scraps.to_a + params[:option].class_types.to_a
 		else
 			@scraps = params[:scraps] || []
 			@raw = params[:raw] || 0
@@ -50,18 +63,18 @@ class ResourcePool
 	end
 
 	def +(pool)
-		new(raw: raw + pool.raw, scraps: scraps + pool.scraps)
+		ResourcePool.new(raw: raw.to_i + pool.raw.to_i, scraps: scraps + pool.scraps)
 	end
 
 	def -(pool)
-		new(raw: raw - pool.raw, scraps: scraps - pool.scraps)
+		ResourcePool.new(raw: raw.to_i - pool.raw.to_i, scraps: scraps - pool.scraps)
 	end
 
 	def contains?(pool)
-		is_contain = raw > pool.raw
+		is_contain = raw.to_i >= pool.raw.to_i
 
-		# still doesn't do class comparisons
-		is_contain &= pool.scraps.all? { |scrap| scraps.include? scrap }
+		# TODO: class comparisons, multiple of scrap/class
+		is_contain &= pool.scraps.all? { |scrap| scraps.map(&:scrap).include? scrap }
 
 		is_contain
 	end

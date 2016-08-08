@@ -18,13 +18,32 @@ class GameState < ActiveRecord::Base
 		success = false
 
 		transaction do
-			success = update(raw: raw - resource_hash[:raw])
-			resource_hash[:scrap_hold_ids]
-				.each { |id| success &= ScrapHold.destroy(id) }
-			resource_hash[:blueprint_hold_ids]
-				.each { |id| success &= BlueprintHold.destroy(id) }
-			resource_hash[:module_hold_ids]
-				.each { |id| success &= ModuleHold.destroy(id) }
+			success = update(raw: raw - resource_hash["raw"])
+
+			# TODO: temporary thing — I think?
+			if resource_hash["scraps"]
+				resource_hash["scraps"].each do |scrap|
+					success &= scrap_holds
+						.select { |hold| hold.scrap.id == scrap["id"] }
+						.sort_by { |hold| hold.value }
+						.first.destroy()
+				end
+			end
+
+			if resource_hash["scrap_hold_ids"]
+				resource_hash["scrap_hold_ids"]
+					.each { |id| success &= ScrapHold.destroy(id) }
+			end
+
+			if resource_hash["blueprint_hold_ids"]
+				resource_hash["blueprint_hold_ids"]
+					.each { |id| success &= BlueprintHold.destroy(id) }
+			end
+
+			if resource_hash["module_hold_ids"]
+				resource_hash["module_hold_ids"]
+					.each { |id| success &= ModuleHold.destroy(id) }
+			end
 		end
 
 		success

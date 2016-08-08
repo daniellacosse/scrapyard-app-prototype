@@ -14,13 +14,12 @@
             <span><%= player_state.player.email %></span>
             <% end %>
             <% if player_state.player.id == current_player.id %>
-            <b>
-                (me)</b>
-            <% if player_state.is_my_turn %>
-            <%= button_to 'End Turn', game_state_path(@game_state), method: :put, params: { is_my_turn: false } %>
-            <% end %>
+              <b>(me)</b>
+              <% if player_state.is_my_turn %>
+                <%= button_to 'End Turn', game_state_path(@game_state), method: :put, params: { is_my_turn: false } %>
+              <% end %>
             <% elsif @game_state.game.has_started %>
-            <%= link_to 'Trade', new_game_state_trade_path(player_state) %>
+              <%= link_to 'Propose Trade', new_game_state_trade_path(player_state) %>
             <% end %>
             <% unless @game_state.game.has_started %>
             <% if player_state.is_ready %>
@@ -72,7 +71,7 @@
             <div class="panel-heading" role="tab" id="headingOne">
                 <h4 class="panel-title">
                     <a data-toggle="collapse" data-parent="#accordion" href="#heldScraps" aria-expanded="true" aria-controls="heldScraps">
-                        Held Scraps
+                        Held Scraps (<%= @game_state.scrap_holds.count %>)
                     </a>
                 </h4>
             </div>
@@ -99,7 +98,7 @@
             <div class="panel-heading" role="tab" id="headingTwo">
                 <h4 class="panel-title">
                     <a class="collapsed" data-toggle="collapse" data-parent="#accordion" href="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
-                        Held Blueprints
+                        Held Blueprints (<%= @game_state.blueprint_holds.count %>)
                     </a>
                 </h4>
             </div>
@@ -110,8 +109,10 @@
                     <% if !!hold.blueprint %>
                     <li>
                         <%= hold.blueprint.name %>
-                        <%= button_to 'Build', new_blueprint_hold_module_hold_path(hold), params: { build: true } %>
-                        |
+                        <% if hold.build_options.length > 0 %>
+                          <%= button_to 'Build', new_blueprint_hold_module_hold_path(hold), method: :get %>
+                          |
+                        <% end %>
                         <%= button_to 'Discard', hold, method: :delete, data: { confirm: 'Are you sure?' } %>
                     </li>
                     <% end %>
@@ -126,7 +127,7 @@
             <div class="panel-heading" role="tab" id="headingThree">
                 <h4 class="panel-title">
                     <a class="collapsed" data-toggle="collapse" data-parent="#accordion" href="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
-                        Held Scrapper Guts
+                        Held Scrapper Guts (<%= @game_state.module_holds.count %>)
                     </a>
                 </h4>
             </div>
@@ -146,7 +147,7 @@
             <div class="panel-heading" role="tab" id="headingFour">
                 <h4 class="panel-title">
                     <a class="collapsed" data-toggle="collapse" data-parent="#accordion" href="#tradeProposals" aria-expanded="false" aria-controls="tradeProposals">
-                        Trade Proposals
+                        Trade Proposals (<%= @game_state.trades.count %>)
                     </a>
                 </h4>
             </div>

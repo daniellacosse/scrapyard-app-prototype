@@ -1,4 +1,6 @@
-<%= form_for [@game_state, @module_hold] do |f| %>
+<h3>Choose Build:</h3>
+
+<%= form_for [@blueprint_hold, @module_hold] do |f| %>
   <% if @module_hold.errors.any? %>
     <div id="error_explanation">
       <h2><%= pluralize(@module_hold.errors.count, "error") %> prohibited this game from being saved:</h2>
@@ -12,8 +14,26 @@
   <% end %>
 
   <div class="field">
-    <%= f.label :build %><br>
-    <%= f.radio_group name: :build, values: @blueprint_hold.build_options.map(&:to_json) %>
+    <% @blueprint_hold.build_options.each_with_index do |build_option, i| %>
+      <input type="radio" id="module_holds_build_#{i}" name="module_hold[build]" value="<%= build_option.to_json %>" />
+
+      <div class="well" style="margin-left: 20px; padding: 0 20px;">
+        <% if build_option.raw > 0 %>
+          <h5>raw: <%= build_option.raw %></h5>
+        <% end %>
+        <% if build_option.scraps.count > 0 %>
+          <h5>scraps:</h5>
+          <ul style="padding: 0;">
+            <% build_option.scraps.each do |scrap| %>
+              <li style="padding: 0;"><%= scrap.name %></li>
+            <% end %>
+          </ul>
+        <% end %>
+        <% if build_option.raw == 0 && build_option.scraps.count == 0 %>
+          <em style="padding: 20px 0; display: block;">No components required.</em>
+        <% end %>
+      </div>
+    <% end %>
   </div>
   <div class="actions">
     <%= f.submit %>

@@ -12,24 +12,16 @@
   <% end %>
 
   <div class="actions">
-    <table>
-      <tr>
-        <td>
-          <b>(me)</b>
+    <table width="100%">
+      <tr style="color: white; background: gray;">
+        <td width="50%">
+          <h4><%= @proposer_state.player.email %> (me)</h4>
         </td>
-        <td>
-          <b><%= @proposer_state.player.email %></b>
+        <td width="50%">
+          <h4><%= @game_state.player.email %></h4>
         </td>
       </tr>
       <tr>
-        <td>
-          <b><%= f.label :scrap_hold_cost %>:</b>
-          <% @game_state.scrap_holds.includes(:scrap).each do |hold| %>
-            <br>
-            <%= f.radio_button :scrap_hold_cost, hold.id %>
-            <%= hold.scrap.name %>
-          <% end %>
-        </td>
         <td>
           <b><%= f.label :proposing_player_scrap_hold_cost %>:</b>
           <% @proposer_state.scrap_holds.includes(:scrap).each do |hold| %>
@@ -38,8 +30,16 @@
             <%= hold.scrap.name %>
           <% end %>
         </td>
+        <td>
+          <b><%= f.label :scrap_hold_cost %>:</b>
+          <% @game_state.scrap_holds.includes(:scrap).each do |hold| %>
+            <br>
+            <%= f.radio_button :scrap_hold_cost, hold.id %>
+            <%= hold.scrap.name %>
+          <% end %>
+        </td>
       </tr>
-      <tr>
+      <!-- <tr>
         <td>
           <b><%= f.label :blueprint_hold_cost %>:</b>
           <% @game_state.blueprint_holds.includes(:blueprint).each do |hold| %>
@@ -75,17 +75,17 @@
             <%= hold.scrapper_module.name %>
           <% end %>
         </td>
-      </tr>
+      </tr> -->
       <tr>
-        <td>
-          <b><%= f.label :raw_cost %>:</b>
-          <br>
-          <%= f.number_field :raw_cost %>
-        </td>
         <td>
           <b><%= f.label :proposing_player_raw_cost %>:</b>
           <br>
-          <%= f.number_field :proposing_player_raw_cost %>
+          <%= f.number_field :proposing_player_raw_cost, input_html: { value: 0 } %>
+        </td>
+        <td>
+          <b><%= f.label :raw_cost %>:</b>
+          <br>
+          <%= f.number_field :raw_cost, input_html: { value: 0 } %>
         </td>
       </tr>
     </table>

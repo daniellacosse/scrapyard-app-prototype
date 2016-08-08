@@ -13,7 +13,13 @@ class GameStatesController < ApplicationController
       end
     end
 
-    render :show
+    unless current_player.game_states.include? @game_state
+      flash[:error] = "That's not you."
+
+      redirect_to games_url
+    else
+      render :show
+    end
   end
 
   # POST /games/:game_id/game_states

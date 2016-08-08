@@ -65,6 +65,11 @@ input {
   &:focus {
     border: 1px solid blue;
   }
+
+  &[type="radio"] {
+    float: left;
+    cursor: pointer;
+  }
 }
 
 input[type="submit"] {
