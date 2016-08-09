@@ -87,6 +87,7 @@ class TradesController < ApplicationController
 
   # DELETE /trades/:id
   def destroy
+    @game_state = @trade.game_state
     @trade.destroy
     respond_to do |format|
       format.html { redirect_to game_state_path(@game_state) }
