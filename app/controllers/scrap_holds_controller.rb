@@ -9,24 +9,26 @@ class ScrapHoldsController < ApplicationController
       .reject(&:empty?)
       .each do |id|
         scrap_id, scrap_value = *id.split("-")
-        hold = ScrapHold.create(scrap_id: scrap_id.to_i, value: scrap_value.to_i)
+        if !!Scrap.find(scrap_id)
+          hold = ScrapHold.create(scrap_id: scrap_id.to_i, value: scrap_value.to_i)
 
-        if hold.persisted?
-          scrap = hold.scrap
-          @game_state.scrap_holds << hold
-          @game_state.siblings.includes(:blueprints).each do |sibling|
-            next if sibling.id == @game_state.id
-            matches = sibling.blueprints.to_a.select do |bp|
-              !sibling.holds?(scrap) && bp.requires?(scrap)
-            end
+          if hold.persisted?
+            scrap = hold.scrap
+            @game_state.scrap_holds << hold
+            @game_state.siblings.includes(:blueprints).each do |sibling|
+              next if sibling.id == @game_state.id
+              matches = sibling.blueprints.to_a.select do |bp|
+                !sibling.holds?(scrap) && bp.requires?(scrap)
+              end
 
-            if matches.length > 0
-              alert_text = <<-HEREDOC
-                #{@game_state.player.email} drew a(n) #{scrap.name}!
-                (You need one for: #{matches.map(&:name).join(', ')}.)
-              HEREDOC
+              if matches.length > 0
+                alert_text = <<-HEREDOC
+                  #{@game_state.player.email} drew a(n) #{scrap.name}!
+                  (You need one for: #{matches.map(&:name).join(', ')}.)
+                HEREDOC
 
-              Message.create(game_state_id: sibling.id, text: alert_text)
+                Message.create(game_state_id: sibling.id, text: alert_text)
+              end
             end
           end
         else

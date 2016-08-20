@@ -78,4 +78,9 @@ class ResourcePool
 
 		is_contain
 	end
+
+	# TODO: fix
+	def length
+		1
+	end
 end

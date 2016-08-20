@@ -45,7 +45,7 @@ class GameStatesController < ApplicationController
   def update
     if params[:is_ready]
       @game_state.set_ready
-    elsif params[:is_my_turn] == false
+    elsif params[:is_my_turn] == "false"
       @next_player_state = @game_state.siblings.find do |state|
         state.player_number == @game_state.player_number + 1
       end

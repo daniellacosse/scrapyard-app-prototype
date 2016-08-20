@@ -72,7 +72,7 @@ modules.each do |mod_data|
 	)
 
 	blueprint_data = blueprints.find { |b| b["name"] == mod.name }
-	byebug unless !!blueprint_data
+	throw "blueprint doesn't exist! try rerunning the deck scripts or resetting the google drive id for the blueprint csv" unless !!blueprint_data
 	blueprint = Blueprint.create(
 		scrapper_module_id: mod.id,
 		rank: blueprint_data["rank"]

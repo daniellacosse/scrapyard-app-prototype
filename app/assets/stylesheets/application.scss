@@ -90,6 +90,10 @@ td, .notice, .error {
   padding: 5px;
 }
 
+tr:nth-child(even) {
+  background-color: #efefef;
+}
+
 ul, li {
   list-style-type: none;
 }
