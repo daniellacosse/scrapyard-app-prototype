@@ -156,6 +156,7 @@ ActiveRecord::Schema.define(version: 20160119021850) do
     t.integer  "spread"
     t.string   "text"
     t.string   "module_class"
+    t.integer  "class_id"
     t.integer  "weight"
     t.datetime "created_at",   null: false
     t.datetime "updated_at",   null: false
@@ -169,7 +170,7 @@ ActiveRecord::Schema.define(version: 20160119021850) do
   end
 
   create_table "trades", force: :cascade do |t|
-    t.boolean  "is_agreed",                            default: true
+    t.boolean  "is_agreed",                            default: false
     t.integer  "game_state_id"
     t.integer  "proposing_player_state_id"
     t.integer  "raw_cost"
@@ -180,8 +181,8 @@ ActiveRecord::Schema.define(version: 20160119021850) do
     t.integer  "proposing_player_blueprint_hold_cost"
     t.integer  "module_hold_cost"
     t.integer  "proposing_player_module_hold_cost"
-    t.datetime "created_at",                                          null: false
-    t.datetime "updated_at",                                          null: false
+    t.datetime "created_at",                                           null: false
+    t.datetime "updated_at",                                           null: false
   end
 
 end

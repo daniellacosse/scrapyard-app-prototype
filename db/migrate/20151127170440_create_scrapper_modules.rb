@@ -13,6 +13,7 @@ class CreateScrapperModules < ActiveRecord::Migration
       t.integer :spread
       t.string :text
       t.string :module_class
+      t.integer :class_id
       t.integer :weight
 
       t.timestamps null: false

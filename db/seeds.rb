@@ -31,16 +31,19 @@ end
 ### SCRIPT BEGIN ###
 weapons = make_collec_from_google(secret("WEAPON_GSHEET_ID")).map do |weapon|
 	weapon["type"] = "WPN"
+	weapon["class_id"] = weapon["wpn_id"]
 	weapon
 end
 
 limbs = make_collec_from_google(secret("LIMB_GSHEEET_ID")).map do |limb|
 	limb["type"] = "LMB"
+	limb["class_id"] = limb["lmb_id"]
 	limb
 end
 
 addons = make_collec_from_google(secret("ADD_GSHEET_ID")).map do |add|
 	add["type"] = "ADD"
+	add["class_id"] = add["add_id"]
 	add
 end
 
@@ -68,6 +71,7 @@ modules.each do |mod_data|
 		spread: mod_data["spread"].to_i,
 		text: mod_data["text"],
 		module_class: mod_data["type"], # TODO: subtypes
+		class_id: mod_data["class_id"].to_i,
 		weight: mod_data["weight"].to_i
 	)
 

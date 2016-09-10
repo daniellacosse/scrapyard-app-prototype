@@ -6,13 +6,16 @@ class BlueprintHoldsController < ApplicationController
     @game = @game_state.game
 
     hold_params[:batch_ids]
-      .split(/\s*[^a-zA-Z0-9]\s+|\s+/)
+      .split(/,\s?/)
       .reject(&:empty?)
-      .each do |id|
+      .each do |full_id|
+        type, id = *full_id.split("-")
 
-        if !!Blueprint.find(id)
+        found_module = ScrapperModule.find_by(module_class: type.upcase, class_id: id.to_i)
+
+        if !!found_module
           hold = BlueprintHold.create(
-            blueprint_id: id.to_i, game_id: @game.id
+            blueprint_id: found_module.blueprint_id, game_id: @game.id
           )
 
           if hold.persisted?

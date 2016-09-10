@@ -41,6 +41,8 @@ class TradesController < ApplicationController
 
     respond_to do |format|
       if @trade.save
+        Message.create(text: "#{@proposer_state.name} would like to trade with you! Check the trade proposals section at the bottom of the page.", game_state_id: @game_state_id.id)
+
         format.html { redirect_to game_state_path(@proposer_state) }
         format.json { render :show, status: :created, location: @trade }
       else
@@ -74,6 +76,10 @@ class TradesController < ApplicationController
         if trade_params == "is_agreed=true"
           @trade.make
           @trade.destroy
+
+          Message.create(text: "#{@trade.proposing_player_state_id} accepted your trade request!", game_state_id: @trade.game_state_id)
+        else
+          Message.create(text: "#{@trade.proposing_player_state_id} revised your trade request.", game_state_id: @trade.game_state_id)
         end
 
         format.html { redirect_to game_state_path(@trade.game_state) }
