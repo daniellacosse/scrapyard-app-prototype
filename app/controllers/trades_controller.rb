@@ -5,7 +5,20 @@ class TradesController < ApplicationController
   def new
     @trade = Trade.new
     @game_state = GameState.find(params[:game_state_id])
-    @proposer_state = GameState.find(params[:game_state_id])
+
+    @proposer_state = current_player.state_for_game @game_state.game
+
+    if @proposer_state.raw == 0 && @proposer_state.scrap_holds.count == 0
+      flash[:error] = "You don't have anything to trade."
+
+      redirect_to @proposer_state
+    elsif @game_state.raw == 0 && @game_state.scrap_holds.count == 0
+      flash[:error] = "#{@game_state.player.email} has nothing to trade."
+
+      redirect_to @proposer_state
+    else
+      render :new
+    end
   end
 
   # GET /trades/:id/edit
@@ -18,11 +31,19 @@ class TradesController < ApplicationController
 
   # POST /game_states/:game_state_id/trades
   def create
-    @trade = Trade.new(trade_params)
+    @game_state = GameState.find(params[:game_state_id])
+    @proposer_state = current_player.state_for_game @game_state.game
+
+    parsed_params = Hash[trade_params.map {|k,v| [k, v.to_i]}]
+    parsed_params[:proposing_player_state_id] =  @proposer_state.id
+
+    @trade = @game_state.trades.create(parsed_params)
 
     respond_to do |format|
       if @trade.save
-        format.html { redirect_to game_state_path(@game_state) }
+        Message.create(text: "#{@proposer_state.name} would like to trade with you! Check the trade proposals section at the bottom of the page.", game_state_id: @game_state_id.id)
+
+        format.html { redirect_to game_state_path(@proposer_state) }
         format.json { render :show, status: :created, location: @trade }
       else
         format.html { render :new }
@@ -33,7 +54,9 @@ class TradesController < ApplicationController
 
   # PATCH/PUT /trades/:id
   def update
-    unless trade_params[:is_agreed]
+    @game_state = @trade.game_state
+
+    unless trade_params == "is_agreed=true"
       swapped_params = {}
 
       swapped_params[:game_state_id] = trade_params[:proposing_player_state_id]
@@ -49,10 +72,17 @@ class TradesController < ApplicationController
     end
 
     respond_to do |format|
-      if @trade.update(swapped_params || trade_params)
-        @trade.make if trade_params[:is_agreed]
+      if @trade.update(swapped_params || {is_agreed: true})
+        if trade_params == "is_agreed=true"
+          @trade.make
+          @trade.destroy
 
-        format.html { redirect_to game_state_path(@game_state) }
+          Message.create(text: "#{@trade.proposing_player_state_id} accepted your trade request!", game_state_id: @trade.game_state_id)
+        else
+          Message.create(text: "#{@trade.proposing_player_state_id} revised your trade request.", game_state_id: @trade.game_state_id)
+        end
+
+        format.html { redirect_to game_state_path(@trade.game_state) }
         format.json { render :show, status: :ok, location: @trade }
       else
         format.html { render :edit }
@@ -63,6 +93,7 @@ class TradesController < ApplicationController
 
   # DELETE /trades/:id
   def destroy
+    @game_state = @trade.game_state
     @trade.destroy
     respond_to do |format|
       format.html { redirect_to game_state_path(@game_state) }

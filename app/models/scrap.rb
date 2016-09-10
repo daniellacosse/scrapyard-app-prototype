@@ -1,7 +1,4 @@
 class Scrap < ActiveRecord::Base
-	has_many :scrap_effects
-	has_many :effects, through: :scrap_effects
-
 	has_many :scrap_classes
 	has_many :class_types, through: :scrap_classes
 
@@ -12,10 +9,6 @@ class Scrap < ActiveRecord::Base
 
 	def add_class(class_name)
 		class_types << ClassType.find_or_create_by(name: class_name)
-	end
-
-	def add_effect(effect_data)
-		effects << Effect.find_or_create_by(effect_data)
 	end
 
 	def rarity

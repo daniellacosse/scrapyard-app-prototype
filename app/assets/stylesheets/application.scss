@@ -65,6 +65,11 @@ input {
   &:focus {
     border: 1px solid blue;
   }
+
+  &[type="radio"] {
+    float: left;
+    cursor: pointer;
+  }
 }
 
 input[type="submit"] {
@@ -83,6 +88,10 @@ a:hover {
 
 td, .notice, .error {
   padding: 5px;
+}
+
+tr:nth-child(even) {
+  background-color: #efefef;
 }
 
 ul, li {

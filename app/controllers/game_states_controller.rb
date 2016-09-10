@@ -13,7 +13,13 @@ class GameStatesController < ApplicationController
       end
     end
 
-    render :show
+    unless current_player.game_states.include? @game_state
+      flash[:error] = "That's not you."
+
+      redirect_to games_url
+    else
+      render :show
+    end
   end
 
   # POST /games/:game_id/game_states
@@ -39,7 +45,7 @@ class GameStatesController < ApplicationController
   def update
     if params[:is_ready]
       @game_state.set_ready
-    elsif params[:is_my_turn] == false
+    elsif params[:is_my_turn] == "false"
       @next_player_state = @game_state.siblings.find do |state|
         state.player_number == @game_state.player_number + 1
       end

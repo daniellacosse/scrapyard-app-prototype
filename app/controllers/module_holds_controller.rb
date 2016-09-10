@@ -16,11 +16,13 @@ class ModuleHoldsController < ApplicationController
         game_state_id: @game_state.id,
         scrapper_module_id: @blueprint_hold.blueprint.scrapper_module.id
       )
+
+      @blueprint_hold.destroy
     else
       flash[:error] = "Something went wrong. You probably didn't have the right resources."
     end
 
-    render @game_state
+    redirect_to @game_state
   end
 
   private

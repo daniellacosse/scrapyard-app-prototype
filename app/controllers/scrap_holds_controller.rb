@@ -8,24 +8,39 @@ class ScrapHoldsController < ApplicationController
       .split(/\s*[^a-zA-Z0-9]\s+|\s+/)
       .reject(&:empty?)
       .each do |id|
-        hold = ScrapHold.create(scrap_id: id.to_i)
+        scrap_id, scrap_value = *id.split("-")
+        if !!Scrap.find(scrap_id)
+          hold = ScrapHold.create(scrap_id: scrap_id.to_i, value: scrap_value.to_i)
 
-        if hold.persisted?
-          scrap = hold.scrap
-          @game_state.scrap_holds << hold
-          @game_state.siblings.includes(:blueprints).each do |sibling|
-            next if sibling.id == @game_state.id
-            matches = sibling.blueprints.to_a.select do |bp|
-              !sibling.holds?(scrap) && bp.requires?(scrap)
-            end
+          if hold.persisted?
+            scrap = hold.scrap
+            @game_state.scrap_holds << hold
 
-            if matches.length > 0
-              alert_text = <<-HEREDOC
-                #{@game_state.player.email} drew a(n) #{scrap.name}!
-                (You need one for: #{matches.map(&:name).join(', ')}.)
-              HEREDOC
+            @game_state.siblings.includes(:blueprints).each do |sibling|
+              matches = []
+              alert_text = ""
 
-              Message.create(game_state_id: sibling.id, text: alert_text)
+              if sibling.id == @game_state.id
+                matches = sibling.blueprints.to_a.select { |bp| bp.requires?(scrap) }
+
+                alert_text = <<-HEREDOC
+Note!: The #{scrap.name} you just drew could be used to help brew any of the following:
+#{matches.map(&:name).join(', ')}
+                HEREDOC
+              else
+                matches = sibling.blueprints.to_a.select do |bp|
+                  !sibling.holds?(scrap) && bp.requires?(scrap)
+                end
+
+                alert_text = <<-HEREDOC
+#{@game_state.player.email} drew a(n) #{scrap.name}!
+(You need one for: #{matches.map(&:name).join(', ')}.)
+HEREDOC
+              end
+
+              if matches.length > 0
+                Message.create(game_state_id: sibling.id, text: alert_text)
+              end
             end
           end
         else

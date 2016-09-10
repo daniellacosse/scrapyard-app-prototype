@@ -1,13 +1,16 @@
 ### UTILITIES ###
-
 require "open-uri"
 require "csv"
 
-def make_collec_from_google(id)
+def secret(secret_name)
+	Rails.application.secrets[secret_name]
+end
+
+def make_collec_from_csv(url)
 	result = []
 
 	buffer = CSV.parse(
-		open("https://docs.google.com/spreadsheets/d/#{id}/export?format=csv", ssl_verify_mode: OpenSSL::SSL::VERIFY_NONE).read
+		open(url, ssl_verify_mode: OpenSSL::SSL::VERIFY_NONE).read
 	)
 
 	headers = buffer.shift
@@ -21,141 +24,69 @@ def make_collec_from_google(id)
 	result
 end
 
-class String
-	def split_on_comma
-		split /,\s*/
-	end
-
-	def parse_on_effect
-		split("\n").compact.map do |effect_str|
-			next unless effect_str.match(/^\([+-.]\d*\)\s+(.*)/)
-
-			{
-				description: effect_str.match(/^\([+-.]\d*\)\s+(.*)/)[1],
-				magnitude: (effect_str.match(/^\([+-.](\d*)\)/)[1] || 1).to_i
-			}
-		end
-	end
-
-	def to_bool
-      result = false
-      result = (!self.nil? && !(self.downcase.squish == "false") && (self.downcase.squish == "true" || self != "0" || self == "1"))
-
-      result
-    end
+def make_collec_from_google(id)
+	make_collec_from_csv("https://docs.google.com/spreadsheets/d/#{id}/export?format=csv")
 end
 
-### OFFLINE TEST ###
-# blueprints = [
-# 	{
-# 		"name" => "module1",
-# 		"rq1" => "class1, (2) class2",
-# 		"rq1_val" => "3",
-# 		"rq2" => "scrap1",
-# 		"rq2_val" => "7"
-# 	}, {
-# 		"name" => "module2",
-# 		"rq1" => "class1 & class2, (3) class2",
-# 		"rq1_val" => "6",
-# 		"rq2" => "scrap2",
-# 		"rq2_val" => "8"
-# 	}
-# ]
-#
-# modules = [
-# 	{
-# 		"name" => "module1",
-# 		"mod_type" => "ARM",
-# 		"armor" => "6",
-# 		"res" => "3",
-# 		"weight" => "2",
-# 		"gives_digging" => "FALSE",
-# 		"gives_flying" => "TRUE",
-# 		"weapon" => "MELEE",
-# 		"weapon_targets" => "Arm, Leg",
-# 		"weapon_dmg" => "3",
-# 		"weapon_acc" => "12",
-# 		"effects" => "(+) good effect"
-# 	}, {
-# 		"name" => "module2",
-# 		"mod_type" => "LEG",
-# 		"armor" => "4",
-# 		"res" => "3",
-# 		"weight" => "2",
-# 		"gives_digging" => "TRUE",
-# 		"gives_flying" => "FALSE",
-# 		"weapon" => nil,
-# 		"weapon_targets" => nil,
-# 		"weapon_dmg" => nil,
-# 		"weapon_acc" => nil,
-# 		"effects" => "(+) good effect"
-# 	}
-# ]
-#
-# scraps = [
-# 	{
-# 		"name" => "scrap1",
-# 		"classes" => "class1",
-# 		"value" => "1",
-# 		"effects" => nil
-# 	}, {
-# 		"name" => "scrap2",
-# 		"classes" => "class1",
-# 		"value" => "2",
-# 		"effects" => "(+) good effect"
-# 	}, {
-# 		"name" => "scrap3",
-# 		"classes" => "class1, class2",
-# 		"value" => "3",
-# 		"effects" => nil
-# 	}
-# ]
-
 ### SCRIPT BEGIN ###
-blueprints = make_collec_from_google BLUEPRINT_GSHEET_ID
-modules = make_collec_from_google MODULE_GSHEET_ID
-scraps = make_collec_from_google SCRAP_GSHEET_ID
+weapons = make_collec_from_google(secret("WEAPON_GSHEET_ID")).map do |weapon|
+	weapon["type"] = "WPN"
+	weapon["class_id"] = weapon["wpn_id"]
+	weapon
+end
+
+limbs = make_collec_from_google(secret("LIMB_GSHEEET_ID")).map do |limb|
+	limb["type"] = "LMB"
+	limb["class_id"] = limb["lmb_id"]
+	limb
+end
+
+addons = make_collec_from_google(secret("ADD_GSHEET_ID")).map do |add|
+	add["type"] = "ADD"
+	add["class_id"] = add["add_id"]
+	add
+end
+
+modules = weapons + limbs + addons
+scraps = make_collec_from_google secret("SCRAP_GSHEET_ID")
+blueprints = make_collec_from_csv secret("BLUEPRINT_PROCESS_CSV_URL")
 
 scraps.each do |scrap_data|
-	scrap = Scrap.create name: scrap_data["name"], value: scrap_data["value"]
+	scrap = Scrap.create name: scrap_data["name"]
 
-	scrap_data["classes"].split_on_comma.each { |c| scrap.add_class c }
-	if scrap_data["effects"]
-		scrap_data["effects"].parse_on_effect.each { |e| scrap.add_effect e }
-	end
+	scrap_classes = scrap_data["classes"]
+
+	scrap_classes.split(", ").each { |c| scrap.add_class c } if scrap_classes
 end
 
 modules.each do |mod_data|
-	mod = ScrapperModule.create({
-		name: mod_data["name"],
-		mod_type: mod_data["mod_type"],
+	mod = ScrapperModule.create(
 		armor: mod_data["armor"].to_i,
-		res: mod_data["res"].to_i,
-		weight: mod_data["weight"].to_i,
-		gives_digging: mod_data["gives_digging"].to_bool,
-		gives_flying: mod_data["gives_flying"].to_bool,
-		weapon: mod_data["weapon"],
-		weapon_dmg: mod_data["weapon_dmg"].to_i,
-		weapon_acc: mod_data["weapon_acc"].to_i
-	})
-
-	if mod_data["weapon_targets"]
-		mod_data["weapon_targets"].split_on_comma.each { |t| mod.add_target t }
-	end
-
-	if mod_data["effects"]
-		mod_data["effects"].parse_on_effect.each { |e| mod.add_effect e }
-	end
+		damage_type: mod_data["damage_type"], # TODO: damage types
+		damage: mod_data["damage"].to_i,
+		mobility: mod_data["mobility"],
+		name: mod_data["name"],
+		range: mod_data["range"].to_i,
+		resilience: mod_data["resilience"].to_i,
+		spread: mod_data["spread"].to_i,
+		text: mod_data["text"],
+		module_class: mod_data["type"], # TODO: subtypes
+		class_id: mod_data["class_id"].to_i,
+		weight: mod_data["weight"].to_i
+	)
 
 	blueprint_data = blueprints.find { |b| b["name"] == mod.name }
-	byebug unless !!blueprint_data
-	blueprint = Blueprint.create scrapper_module_id: mod.id, rank: blueprint_data["rank"]
+	throw "blueprint doesn't exist! try rerunning the deck scripts or resetting the google drive id for the blueprint csv" unless !!blueprint_data
+	blueprint = Blueprint.create(
+		scrapper_module_id: mod.id,
+		rank: blueprint_data["rank"]
+	)
 
 	mod.blueprint_id = blueprint.id
 	mod.save
 
 	5.times do |i|
-		req_key, req_val_key = "rq#{i+1}", "rq#{i+1}_val"
+		req_key, req_val_key = "rq#{i+1}", "rq#{i+1}_buyout"
 
 		if blueprint_data[req_key] && blueprint_data[req_val_key]
 			blueprint.add_requirement(
