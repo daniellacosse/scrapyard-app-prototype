@@ -9,14 +9,19 @@ class BlueprintHold < ActiveRecord::Base
 	def build_options
 		my_resource_pool = ResourcePool.new(game_state: game_state)
 
-		build_list(my_resource_pool, blueprint.requirements.to_a).select do |build|
-			build.met_requirements == blueprint.requirements.length
-		end
+		build_list(my_resource_pool, blueprint.requirements.to_a)
+			.select do |build|
+				build.met_requirements == blueprint.requirements.length
+			end
+			.uniq do |build|
+				"raw:#{build.raw}.scraps:#{build.scraps.map(&:name).sort.join(",")}"
+			end
 	end
 
 	private
 	def build_list(resource_pool, requirements, build_pool = ResourcePool.new)
-		return build_pool if requirements.length <= 0
+		return [ build_pool ] if requirements.length <= 0
+		return [ build_pool ] if resource_pool.empty?
 
 		build_branches = []
 
@@ -31,14 +36,14 @@ class BlueprintHold < ActiveRecord::Base
 			build_branch.met_requirements += 1
 
 			build_branches << build_list(
-				leftovers, requirements[1..-1], build_branch
+				leftovers, requirements[1..-1].dup, build_branch
 			)
 		end
 
 		requirement.options.each do |option|
 			class_list = [].tap do |_cl|
 				option.class_options.each do |cop|
-					cop.count.times { _cl << cop.class_type }
+					(cop.count || 1).times { _cl << cop.class_type }
 				end
 			end
 
@@ -55,12 +60,10 @@ class BlueprintHold < ActiveRecord::Base
 				build_branch.met_requirements += 1
 
 				build_branches << build_list(
-					leftovers, requirements[1..-1], build_branch
+					leftovers, requirements[1..-1].dup, build_branch
 				)
 			end
 		end
-
-		byebug
 
 		build_branches.flatten
 	end
@@ -71,9 +74,7 @@ class ResourcePool
 	attr_reader :scraps, :scrap_types, :raw
 
 	def self.permute_over_scrap_types(scrap_types, source_pool, build_pool = ResourcePool.new)
-		if scrap_types.length == 0
-			return [ build_pool ]
-		end
+		return [ build_pool ] if scrap_types.length <= 0
 
 		scrap_type = scrap_types.shift
 		scrap_type_branch = []
@@ -87,11 +88,9 @@ class ResourcePool
 			next_pool.met_requirements += 1
 
 			scrap_type_branch << ResourcePool.permute_over_scrap_types(
-				scrap_types, remainder_pool, next_pool
+				scrap_types.dup, remainder_pool, next_pool
 			)
 		end
-
-		byebug
 
 		scrap_type_branch.flatten
 	end
@@ -126,11 +125,22 @@ class ResourcePool
 	end
 
 	def -(pool)
+		new_scraps = scraps.dup
+		new_scrap_types = scrap_types.dup
+
+		pool.scrap_types.each do |type|
+			new_scrap_types.delete_at(new_scrap_types.index(scrap))
+		end
+
+		pool.scraps.each do |scrap|
+			new_scraps.delete_at(new_scraps.index(scrap))
+		end
+
 		ResourcePool.new(
 			met_requirements: met_requirements,
 			raw: raw.to_i - pool.raw.to_i,
-			scrap_types: scrap_types - pool.scrap_types,
-			scraps: scraps - pool.scraps
+			scrap_types: new_scrap_types,
+			scraps: new_scraps
 		)
 	end
 
@@ -141,18 +151,20 @@ class ResourcePool
 	end
 
 	def list_fits(pool)
-		unless pool.scraps.all? { |scrap| scraps.include? scrap }
-			return []
-		end
+		return [] unless pool.scraps.all? { |scrap| scraps.include? scrap }
 
 		# recurse over scrap_types
 			# pass in scrap_types, truncated pool, ResourcePool w/ scraps
-		byebug
 		scrap_pool = ResourcePool.new(scraps: pool.scraps)
 		remainder = self - scrap_pool
+
+		return [ scrap_pool ] if remainder.empty?
+
 		ResourcePool
-			.permute_over_scrap_types(pool.scrap_types, remainder)
-			.select { |result_pool| result_pool.met_requirements == pool.scrap_types.length }
+			.permute_over_scrap_types(pool.scrap_types.dup, remainder)
+			.select do |result_pool|
+				result_pool.met_requirements == pool.scrap_types.length
+			end
 			.map { |fit| fit + scrap_pool }
 	end
 

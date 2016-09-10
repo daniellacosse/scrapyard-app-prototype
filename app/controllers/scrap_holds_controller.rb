@@ -17,23 +17,28 @@ class ScrapHoldsController < ApplicationController
             @game_state.scrap_holds << hold
 
             @game_state.siblings.includes(:blueprints).each do |sibling|
-              matches = sibling.blueprints.to_a.select do |bp|
-                !sibling.holds?(scrap) && bp.requires?(scrap)
+              matches = []
+              alert_text = ""
+
+              if sibling.id == @game_state.id
+                matches = sibling.blueprints.to_a.select { |bp| bp.requires?(scrap) }
+
+                alert_text = <<-HEREDOC
+Note!: The #{scrap.name} you just drew could be used to help brew any of the following:
+#{matches.map(&:name).join(', ')}
+                HEREDOC
+              else
+                matches = sibling.blueprints.to_a.select do |bp|
+                  !sibling.holds?(scrap) && bp.requires?(scrap)
+                end
+
+                alert_text = <<-HEREDOC
+#{@game_state.player.email} drew a(n) #{scrap.name}!
+(You need one for: #{matches.map(&:name).join(', ')}.)
+HEREDOC
               end
 
               if matches.length > 0
-                if sibling.id == @game_state.id
-                  alert_text = <<-HEREDOC
-                  Note! The #{scrap.name} you just drew could be used to help brew any of the following:
-                  #{matches.map(&:name).join(', ')}
-                  HEREDOC
-                else
-                  alert_text = <<-HEREDOC
-                  #{@game_state.player.email} drew a(n) #{scrap.name}!
-                  (You need one for: #{matches.map(&:name).join(', ')}.)
-                  HEREDOC
-                end
-
                 Message.create(game_state_id: sibling.id, text: alert_text)
               end
             end

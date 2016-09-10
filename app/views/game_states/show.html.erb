@@ -144,6 +144,8 @@
                               <td width="65">
                                 <%= button_to 'Build', new_blueprint_hold_module_hold_path(hold), method: :get %>
                               </td>
+                            <% elsif (hold.build_options.length > 0) %>
+                              <td width="65" style="color:green;">✓</td>
                             <% end %>
                             <td width="65">
                               <%= button_to 'Discard', hold, method: :delete, data: { confirm: 'Are you sure?' } %>
