@@ -40,7 +40,7 @@
       <%= button_to 'Accept', trade_path(@trade), method: :put, params: { trade: { is_agreed: true } } %>
     </td>
     <td width="50%">
-      <%= button_to 'Decline', trade_path(@trade), method: :delete, data: { confirm: 'Are you sure?' } %>
+      <%= button_to 'Decline', trade_path(@trade), method: :delete, data: { confirm: 'Are you sure?' }, class: 'btn btn-danger' %>
     </td>
   </tr>
 </table>

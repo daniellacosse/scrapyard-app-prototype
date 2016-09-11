@@ -58,7 +58,7 @@
         <td width="75">
           <% if player_state.player.id == current_player.id %>
             <% if player_state.is_my_turn %>
-              <%= button_to 'End Turn', game_state_path(@game_state), method: :put, params: { is_my_turn: false } %>
+              <%= button_to 'End Turn', game_state_path(@game_state), {method: :put, params: { is_my_turn: false }, class: 'btn btn-danger'}%>
             <% end %>
           <% elsif @game_state.game.has_started && !@game_state.is_my_turn %>
             <%= button_to 'Trade', new_game_state_trade_path(player_state), method: :get %>
@@ -69,7 +69,7 @@
               <span style="color: green;">Ready!</span>
             <% end %>
             <% if player_state.player.id == current_player.id && !player_state.is_ready %>
-              <%= button_to 'Ready', game_state_path(@game_state), method: :put, params: { is_ready: true } %>
+              <%= button_to 'Ready', game_state_path(@game_state), method: :put, params: { is_ready: true }, class: 'btn btn-success' %>
             <% end %>
           <% end %>
         </td>
@@ -134,11 +134,11 @@
                         </td>
                         <% unless @game_state.is_my_turn %>
                           <td width="65">
-                            <%= button_to 'Sell', hold, method: :delete, params: { sell: true }  %>
+                            <%= button_to 'Sell', hold, method: :delete, params: { sell: true }, class: 'btn btn-success'  %>
                           </td>
                         <% end %>
                         <td width="65">
-                          <%= button_to 'Discard', hold, method: :delete, data: { confirm: 'Are you sure?' } %>
+                          <%= button_to 'Discard', hold, method: :delete, data: { confirm: 'Are you sure?' }, class: 'btn btn-danger' %>
                         </td>
                     </tr>
                     <% end %>
@@ -175,7 +175,7 @@
                               <td width="65" style="color:green;">✓</td>
                             <% end %>
                             <td width="65">
-                              <%= button_to 'Pass', hold, method: :delete, data: { confirm: 'Are you sure?' } %>
+                              <%= button_to 'Pass', hold, method: :delete %>
                             </td>
                         </tr>
                       <% end %>
@@ -244,4 +244,4 @@
   <% end %>
 </section>
 
-<%= button_to 'Leave Game', game_state_path(@game_state), data: { confirm: 'Are you sure?' }, method: :delete %>
+<%= button_to 'Leave Game', game_state_path(@game_state), data: { confirm: 'Are you sure?' }, method: :delete, class: 'btn btn-danger' %>
