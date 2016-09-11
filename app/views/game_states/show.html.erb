@@ -167,12 +167,10 @@
                           <td>
                             <%= hold.blueprint.name.titleize %>
                           </td>
-                            <% if (hold.build_options.length > 0) && !@game_state.is_my_turn %>
+                            <% if !@game_state.is_my_turn %>
                               <td width="65">
                                 <%= button_to 'Build', new_blueprint_hold_module_hold_path(hold), method: :get %>
                               </td>
-                            <% elsif (hold.build_options.length > 0) %>
-                              <td width="65" style="color:green;">✓</td>
                             <% end %>
                             <td width="65">
                               <%= button_to 'Pass', hold, method: :delete %>

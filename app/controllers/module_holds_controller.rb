@@ -10,6 +10,12 @@ class ModuleHoldsController < ApplicationController
     )
 
     @build_options = @blueprint_hold.build_options
+
+    if @build_options.length == 0
+      flash[:error] = "You can't build #{blueprint_hold.blueprint.name} yet."
+
+      redirect_to @game_state
+    end
   end
 
   def create
