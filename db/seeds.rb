@@ -50,7 +50,7 @@ addons = make_collec_from_google(secret(:add_gsheet_id)).map do |add|
 end
 
 modules = weapons + limbs + addons
-scraps = make_collec_from_google secret(:scrap_gheet_id)
+scraps = make_collec_from_google secret(:scrap_gsheet_id)
 blueprints = make_collec_from_csv secret(:blueprint_process_csv_url)
 
 scraps.each do |scrap_data|
