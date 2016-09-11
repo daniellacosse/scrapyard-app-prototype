@@ -7,6 +7,14 @@ class Scrap < ActiveRecord::Base
 
 	has_many :scrap_holds
 
+	def self.find(id)
+		begin
+			super(id)
+		rescue
+			nil
+		end
+	end
+
 	def add_class(class_name)
 		class_types << ClassType.find_or_create_by(name: class_name)
 	end
