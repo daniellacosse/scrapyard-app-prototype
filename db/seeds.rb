@@ -25,6 +25,7 @@ def make_collec_from_csv(url)
 end
 
 def make_collec_from_google(id)
+	puts "https://docs.google.com/spreadsheets/d/#{id}/export?format=csv"
 	make_collec_from_csv("https://docs.google.com/spreadsheets/d/#{id}/export?format=csv")
 end
 
