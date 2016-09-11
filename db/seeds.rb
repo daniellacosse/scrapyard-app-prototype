@@ -3,7 +3,7 @@ require "open-uri"
 require "csv"
 
 def secret(secret_name)
-	Rails.application.secrets[secret_name]
+	Rails.application.secrets["_SECRET_" + secret_name]
 end
 
 def make_collec_from_csv(url)
