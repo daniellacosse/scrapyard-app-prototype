@@ -19,6 +19,7 @@ gem "heroku_secrets", github: "alexpeattie/heroku_secrets"
 group :development do
   gem "spring"
   gem "web-console", "~> 2.0"
+  gem "derailed"
 end
 
 group :development, :test do
