@@ -3,6 +3,7 @@ require "open-uri"
 require "csv"
 
 def secret(secret_name)
+	puts Rails.application.secrets
 	Rails.application.secrets["_SECRET_" + secret_name]
 end
 
