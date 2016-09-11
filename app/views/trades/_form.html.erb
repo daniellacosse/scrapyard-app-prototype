@@ -13,79 +13,47 @@
 
   <div class="actions">
     <table width="100%">
-      <tr style="color: white; background: gray;">
-        <td width="50%">
-          <h4><%= @proposer_state.player.email %> (me)</h4>
+      <tr width="100%">
+        <td width="50%" style="color:green;">
+          <b><%= current_player.email %> (me)'s offer</b>
         </td>
         <td width="50%">
-          <h4><%= @game_state.player.email %></h4>
+          <b>requesting <%= @trade.other_player(current_player).email %></b>
         </td>
       </tr>
-      <tr>
-        <td>
-          <b><%= f.label :proposing_player_scrap_hold_cost %>:</b>
-          <% @proposer_state.scrap_holds.includes(:scrap).each do |hold| %>
-            <br>
-            <%= f.radio_button :proposing_player_scrap_hold_cost, hold.id %>
-            <%= hold.scrap.name %>
-          <% end %>
-        </td>
-        <td>
-          <b><%= f.label :scrap_hold_cost %>:</b>
-          <% @game_state.scrap_holds.includes(:scrap).each do |hold| %>
-            <br>
-            <%= f.radio_button :scrap_hold_cost, hold.id %>
-            <%= hold.scrap.name %>
-          <% end %>
-        </td>
-      </tr>
-      <!-- <tr>
-        <td>
-          <b><%= f.label :blueprint_hold_cost %>:</b>
-          <% @game_state.blueprint_holds.includes(:blueprint).each do |hold| %>
-            <br>
-            <%= f.radio_button :blueprint_hold_cost, hold.id %>
-            <%= hold.blueprint.name %>
-          <% end %>
-        </td>
-
-        <td>
-          <b><%= f.label :proposing_player_blueprint_hold_cost %>:</b>
-          <% @proposer_state.blueprint_holds.includes(:blueprint).each do |hold| %>
-            <br>
-            <%= f.radio_button :proposing_player_blueprint_hold_cost, hold.id %>
-            <%= hold.blueprint.name %>
-          <% end %>
-        </td>
-      </tr>
-      <tr>
-        <td>
-          <b><%= f.label :module_hold_cost %>:</b>
-          <% @game_state.module_holds.includes(:scrapper_modules).each do |hold| %>
-            <br>
-            <%= f.radio_button :module_hold_cost, hold.id %>
-            <%= hold.scrapper_module.name %>
-          <% end %>
-        </td>
-        <td>
-          <b><%= f.label :proposing_player_module_hold_cost %>:</b>
-          <% @proposer_state.module_holds.includes(:scrapper_modules).each do |hold| %>
-            <br>
-            <%= f.radio_button :proposing_player_module_hold_cost, hold.id %>
-            <%= hold.scrapper_module.name %>
-          <% end %>
-        </td>
-      </tr> -->
-      <tr>
-        <td>
-          <b><%= f.label :proposing_player_raw_cost %>:</b>
+      <tr width="100%">
+      <% @most_scraps_on_the_table.times do |index| %>
+        <tr width="100%">
+          <td width="50%" style="color:green;">
+            <% if @trade.this_player_scraps(current_player)[index] %>
+              <%= f.check_box("trade_holds", { multiple: true }, @trade.this_player_scraps(current_player)[index].id) %>
+              <%= f.label( @trade.this_player_scraps(current_player)[index].scrap.name) %>
+            <% end %>
+          </td>
+          <td width="50%">
+            <% if @trade.other_player_scraps(current_player)[index] %>
+              <%= f.check_box("trade_holds", { multiple: true }, @trade.other_player_scraps(current_player)[index].id) %>
+              <%= f.label( @trade.other_player_scraps(current_player)[index].scrap.name) %>
+            <% end %>
+          </td>
+        </tr>
+        <!-- , {checked: @trade.trade_holds.include?(@trade.this_player_scraps(current_player)[index].id }) -->
+        <!-- , { checked: @trade.trade_holds.include?(@trade.other_player_scraps(current_player)[index].id }) -->
+      <% end %>
+      <tr width="100%">
+        <td width="50%" style="color:green;">
+          <b><%= f.label "offered cash" %>:</b>
           <br>
-          <%= f.number_field :proposing_player_raw_cost, input_html: { value: 0 } %>
+          <%= f.number_field :solicitor_raw_cost, input_html: { value: 0 }, min: 0, max: @current_player_state.raw %>
+          <br />
+          <span>Your Cash: $<%= @current_player_state.raw %></span>
         </td>
-        <td>
-          <b><%= f.label :raw_cost %>:</b>
+        <td width="50%">
+          <b><%= f.label "requested cash" %>:</b>
           <br>
-          <%= f.number_field :raw_cost, input_html: { value: 0 } %>
+          <%= f.number_field :solicited_raw_cost, input_html: { value: 0 }, min: 0, max: @solicited_game_state.raw %>
+          <br />
+          <span>Their Cash: $<%= @solicited_game_state.raw %></span>
         </td>
       </tr>
     </table>

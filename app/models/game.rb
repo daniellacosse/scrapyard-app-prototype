@@ -1,6 +1,7 @@
 class Game < ActiveRecord::Base
 	has_many :game_states, dependent: :destroy
 	has_many :players, through: :game_states
+	has_many :trades
 
 	def available_blueprints
 		taken_blueprints = game_states.collect(&:blueprints).flatten

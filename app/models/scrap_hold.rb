@@ -14,4 +14,8 @@ class ScrapHold < ActiveRecord::Base
 
 		success
 	end
+
+	def player
+		game_state.player
+	end
 end

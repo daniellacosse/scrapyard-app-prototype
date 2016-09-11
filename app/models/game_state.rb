@@ -3,7 +3,6 @@ class GameState < ActiveRecord::Base
 	belongs_to :player
 
 	has_many :messages, dependent: :destroy
-	has_many :trades, dependent: :destroy
 
 	has_many :module_holds, dependent: :destroy
 	has_many :scrapper_modules, through: :module_holds
@@ -70,5 +69,23 @@ class GameState < ActiveRecord::Base
 		end
 
 		success
+	end
+
+	def actionable_trades
+		game.trades.select do |trade|
+		  result = true
+
+		  if trade.is_agreed
+			  result = false
+		  else
+				result = (
+					trade.solicited_player.id == player.id
+				) || (
+					trade.is_revised && trade.solicitor_player.id == id
+				)
+			end
+
+			result
+		end
 	end
 end

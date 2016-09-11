@@ -1,34 +1,48 @@
-<table>
-  <tr>
-    <td>
-      <b>(me)</b>
+<table width="100%">
+  <tr width="100%">
+    <td width="50%" style="color:green;">
+      <b>requesting <%= current_player.email %></b>
     </td>
-    <% if @trade[:scrap_hold_cost] %>
-      <td>
-        <%= ScrapHold.find(@trade[:scrap_hold_cost]).scrap.name %>
-      </td>
-    <% end %>
-    <td>
-      Raw Materials: <%= @trade.raw_cost %>
+    <td width="50%">
+      <b><%= @trade.other_player(current_player).email %>'s offer</b>
     </td>
   </tr>
-  <tr>
-    <td>
-      Proposing Player: <b><%= @trade.proposing_player.email %></b>
-    </td>
-    <% if @trade[:proposing_player_scrap_hold_cost] %>
-      <td>
-        <%= ScrapHold.find(@trade[:proposing_player_scrap_hold_cost]).scrap.name %>
+  <tr width="100%">
+  <% @most_scraps_on_the_table.times do |index| %>
+    <tr width="100%">
+      <td width="50%" style="color:green;">
+        <% if @trade.this_player_trade_holds(current_player)[index] %>
+          <%= @trade.this_player_trade_holds(current_player)[index].name %>
+        <% end %>
       </td>
-    <% end %>
-    <td>
-      Raw Materials: <%= @trade.proposing_player_raw_cost %>
+      <td width="50%">
+        <% if @trade.other_player_trade_holds(current_player)[index] %>
+          <%= @trade.other_player_trade_holds(current_player)[index].name %>
+        <% end %>
+      </td>
+    </tr>
+  <% end %>
+  <tr width="100%">
+    <td width="50%" style="color:green;">
+      Requested Cash: $<%= @trade.this_player_raw_cost(current_player) || 0 %>
+    </td>
+    <td width="50%">
+      Recieveable Cash: $<%= @trade.other_player_raw_cost(current_player) || 0 %>
+    </td>
+  </tr>
+  <tr width="100%">
+    <!-- <% unless @current_player_state.is_my_turn %>
+      <td width="33%">
+        <%= button_to 'Counter Offer', edit_trade_path(@trade) %>
+      </td>
+    <% end %> -->
+    <td width="50%">
+      <%= button_to 'Accept', trade_path(@trade), method: :put, params: { trade: { is_agreed: true } } %>
+    </td>
+    <td width="50%">
+      <%= button_to 'Decline', trade_path(@trade), method: :delete, data: { confirm: 'Are you sure?' } %>
     </td>
   </tr>
 </table>
 
-<%= button_to 'Counter Offer', edit_trade_path(@trade) %>
-<%= button_to 'Accept', trade_path(@trade), method: :put, params: { trade: { is_agreed: true } } %>
-<%= button_to 'Decline', trade_path(@trade), method: :delete, data: { confirm: 'Are you sure?' } %>
-
-<%= link_to 'Back', game_state_path(@trade.game_state) %>
+<%= link_to 'Back', game_state_path(@current_player_state) %>

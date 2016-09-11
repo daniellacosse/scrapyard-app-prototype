@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160119021850) do
+ActiveRecord::Schema.define(version: 20160911014028) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -169,20 +169,23 @@ ActiveRecord::Schema.define(version: 20160119021850) do
     t.datetime "updated_at", null: false
   end
 
+  create_table "trade_holds", force: :cascade do |t|
+    t.integer  "trade_id"
+    t.integer  "scrap_hold_id"
+    t.datetime "created_at",    null: false
+    t.datetime "updated_at",    null: false
+  end
+
   create_table "trades", force: :cascade do |t|
-    t.boolean  "is_agreed",                            default: false
-    t.integer  "game_state_id"
-    t.integer  "proposing_player_state_id"
-    t.integer  "raw_cost"
-    t.integer  "proposing_player_raw_cost"
-    t.integer  "scrap_hold_cost"
-    t.integer  "proposing_player_scrap_hold_cost"
-    t.integer  "blueprint_hold_cost"
-    t.integer  "proposing_player_blueprint_hold_cost"
-    t.integer  "module_hold_cost"
-    t.integer  "proposing_player_module_hold_cost"
-    t.datetime "created_at",                                           null: false
-    t.datetime "updated_at",                                           null: false
+    t.integer  "game_id"
+    t.integer  "solicitor_player_state_id"
+    t.integer  "solicitor_raw_cost",        default: 0
+    t.integer  "solicited_player_state_id"
+    t.integer  "solicited_raw_cost",        default: 0
+    t.boolean  "is_revised",                default: false
+    t.boolean  "is_agreed",                 default: true
+    t.datetime "created_at",                                null: false
+    t.datetime "updated_at",                                null: false
   end
 
 end

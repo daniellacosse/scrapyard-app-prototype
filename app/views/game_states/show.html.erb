@@ -14,41 +14,68 @@
      setTimeout(refresh, 3000);
 </script>
 
-<h1>
-  <strong>Game #</strong> <%= @game_state.game.guid %>
-</h1>
+<% if @game_state.is_my_turn %>
+  <h1 style="color:green;">
+    <strong>Game #</strong> <%= @game_state.game.guid %>
+  </h1>
+
+  <style>
+    body {
+      background: rgb(184, 214, 193) !important;
+    }
+  </style>
+<% else %>
+  <h1>
+    <strong>Game #</strong> <%= @game_state.game.guid %>
+  </h1>
+<% end %>
 
 <p>
   <h3>Players:</h3>
-  <ul id="current-players">
+  <table id="current-players" width="100%">
     <% @game_state.siblings.each do |player_state| %>
-      <li>
-        <% if player_state.is_my_turn %>
-          <span style="color: green;"><%= player_state.player.email %></span>
-        <% else %>
-          <span><%= player_state.player.email %></span>
-        <% end %>
-
-        <% if player_state.player.id == current_player.id %>
-          <b>(me)</b>
+      <tr width="100%">
+        <td>
           <% if player_state.is_my_turn %>
-            <%= button_to 'End Turn', game_state_path(@game_state), method: :put, params: { is_my_turn: false } %>
+            <span style="color: green;">
+              <%= player_state.player.email %>
+            </span>
+          <% else %>
+            <span>
+              <%= player_state.player.email %>
+            </span>
           <% end %>
-        <% elsif @game_state.game.has_started && !@game_state.is_my_turn %>
-          <%= link_to '[ Propose Trade ]', new_game_state_trade_path(player_state) %>
-        <% end %>
 
-        <% unless @game_state.game.has_started %>
-          <% if player_state.is_ready %>
-            <span style="color: green;">Ready!</span>
+          <% if player_state.player.id == current_player.id %>
+            <% if player_state.is_my_turn %>
+              <b style="color:green;">(me)</b>
+            <% else %>
+              <b>(me)</b>
+            <% end %>
           <% end %>
-          <% if player_state.player.id == current_player.id && !player_state.is_ready %>
-            <%= button_to 'Ready', game_state_path(@game_state), method: :put, params: { is_ready: true } %>
+        </td>
+
+        <td width="75">
+          <% if player_state.player.id == current_player.id %>
+            <% if player_state.is_my_turn %>
+              <%= button_to 'End Turn', game_state_path(@game_state), method: :put, params: { is_my_turn: false } %>
+            <% end %>
+          <% elsif @game_state.game.has_started && !@game_state.is_my_turn %>
+            <%= button_to 'Trade', new_game_state_trade_path(player_state), method: :get %>
           <% end %>
-        <% end %>
-      </li>
+
+          <% unless @game_state.game.has_started %>
+            <% if player_state.is_ready %>
+              <span style="color: green;">Ready!</span>
+            <% end %>
+            <% if player_state.player.id == current_player.id && !player_state.is_ready %>
+              <%= button_to 'Ready', game_state_path(@game_state), method: :put, params: { is_ready: true } %>
+            <% end %>
+          <% end %>
+        </td>
+      </tr>
     <% end %>
-  </ul>
+  </table>
 </p>
 
 <section id="game-state">
@@ -181,29 +208,30 @@
             </div>
         </div>
 
-        <% unless @game_state.is_my_turn %>
+        <% if @game_state.actionable_trades.count > 0 %>
           <div class="panel panel-default">
-              <div class="panel-heading" role="tab" id="headingFour">
-                  <h4 class="panel-title">
-                      <a class="collapsed" data-toggle="collapse" data-parent="#accordion" href="#tradeProposals" aria-expanded="false" aria-controls="tradeProposals">
-                          Trade Proposals (<%= @game_state.trades.count %>)
-                      </a>
-                  </h4>
-              </div>
-              <div id="tradeProposals" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingFour">
-                  <ul id="trade-proposals">
-                    <% if @game_state.trades.count > 0 %>
-                      <% @game_state.trades.each do |trade| %>
-                        <li>
-                          <%= trade.proposing_player.email %>
-                          <%= link_to 'Review', trade_path(trade) %>
-                        </li>
-                      <% end %>
-                    <% else %>
-                      No Trade Proposals
-                    <% end %>
-                  </ul>
-              </div>
+            <div class="panel-heading" role="tab" id="headingFour">
+              <h4 class="panel-title">
+                <a class="collapsed" data-toggle="collapse" data-parent="#accordion" href="#tradeProposals" aria-expanded="false" aria-controls="tradeProposals">
+                  Trade Proposals (<%= @game_state.actionable_trades.count %>)
+                </a>
+              </h4>
+            </div>
+            <div id="tradeProposals" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingFour">
+              <table id="trade-proposals" width="100%">
+                <% @game_state.actionable_trades.each do |trade| %>
+                  <tr width="100%">
+                    <td>
+                      <%= trade.other_player(current_player).email %>
+                    </td>
+
+                    <td width="75">
+                      <%= link_to 'Review', trade_path(trade) %>
+                    </td>
+                  </tr>
+                <% end %>
+              </table>
+            </div>
           </div>
         <% end %>
     </div>

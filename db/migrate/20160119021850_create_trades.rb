@@ -1,22 +1,16 @@
 class CreateTrades < ActiveRecord::Migration
   def change
     create_table :trades do |t|
+      t.integer :game_id
+
+      t.integer :solicitor_player_state_id
+      t.integer :solicitor_raw_cost, default: 0
+
+      t.integer :solicited_player_state_id
+      t.integer :solicited_raw_cost, default: 0
+
+      t.boolean :is_revised, default: false
       t.boolean :is_agreed, default: false
-
-      t.integer :game_state_id
-      t.integer :proposing_player_state_id
-
-      t.integer :raw_cost
-      t.integer :proposing_player_raw_cost
-
-      t.integer :scrap_hold_cost
-      t.integer :proposing_player_scrap_hold_cost
-
-      t.integer :blueprint_hold_cost
-      t.integer :proposing_player_blueprint_hold_cost
-
-      t.integer :module_hold_cost
-      t.integer :proposing_player_module_hold_cost
 
       t.timestamps null: false
     end
