@@ -16,6 +16,7 @@ class BlueprintHold < ActiveRecord::Base
 			.uniq do |build|
 				"raw:#{build.raw}.scraps:#{build.scraps.map(&:name).sort.join(",")}"
 			end
+			.sort { |build| build.raw.to_i }
 	end
 
 	private

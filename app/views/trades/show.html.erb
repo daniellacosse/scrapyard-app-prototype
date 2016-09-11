@@ -1,3 +1,11 @@
+<% if @trade.solicited_game_state.is_my_turn %>
+  <style>
+    body {
+      background: rgb(184, 214, 193) !important;
+    }
+  </style>
+<% else %>
+
 <table width="100%">
   <tr width="100%">
     <td width="50%" style="color:green;">

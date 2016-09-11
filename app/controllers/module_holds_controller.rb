@@ -8,6 +8,8 @@ class ModuleHoldsController < ApplicationController
       game_state_id: @game_state.id,
       scrapper_module_id: @blueprint_hold.blueprint.scrapper_module.id
     )
+
+    @build_options = @blueprint_hold.build_options
   end
 
   def create

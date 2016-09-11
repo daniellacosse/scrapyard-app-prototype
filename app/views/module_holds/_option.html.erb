@@ -1,0 +1,18 @@
+<input type="radio" id="module_holds_build_<%= i %>" name="module_hold[build]" value="<%= build_option.to_json %>" />
+
+<div class="well" style="margin-left: 20px; padding: 0 20px;">
+  <% if build_option.raw > 0 %>
+    <h5 style="color:red;">cash: -$<%= build_option.raw %></h5>
+  <% end %>
+  <% if build_option.scraps.count > 0 %>
+    <h5>scraps:</h5>
+    <ul style="padding: 0;">
+      <% build_option.scraps.sort_by(&:name).each do |scrap| %>
+        <li style="padding: 0;"><%= scrap.name %></li>
+      <% end %>
+    </ul>
+  <% end %>
+  <% if build_option.raw == 0 && build_option.scraps.count == 0 %>
+    <em style="padding: 20px 0; display: block;">No components required.</em>
+  <% end %>
+</div>

@@ -1,4 +1,4 @@
-<h3>Choose Build:</h3>
+<h3>Choose Brew:</h3>
 
 <%= form_for [@blueprint_hold, @module_hold] do |f| %>
   <% if @module_hold.errors.any? %>
@@ -14,25 +14,33 @@
   <% end %>
 
   <div class="field">
-    <% @blueprint_hold.build_options.each_with_index do |build_option, i| %>
-      <input type="radio" id="module_holds_build_#{i}" name="module_hold[build]" value="<%= build_option.to_json %>" />
+    <% if @build_options.length > 6 %>
+      <%= render partial: 'option', locals: { build_option: @build_options[1], i: 0 } %>
+      <%= render partial: 'option', locals: { build_option: @build_options[2], i: 1 } %>
+      <%= render partial: 'option', locals: { build_option: @build_options[3], i: 2 } %>
 
-      <div class="well" style="margin-left: 20px; padding: 0 20px;">
-        <% if build_option.raw > 0 %>
-          <h5>raw: <%= build_option.raw %></h5>
-        <% end %>
-        <% if build_option.scraps.count > 0 %>
-          <h5>scraps:</h5>
-          <ul style="padding: 0;">
-            <% build_option.scraps.each do |scrap| %>
-              <li style="padding: 0;"><%= scrap.name %></li>
+      <div id="accordion" role="tablist" aria-multiselectable="true">
+        <div class="panel panel-default" style="border:0;">
+          <div class="panel-heading" role="tab" id="headingOne" style="background:none;">
+            <h6 class="panel-title" style="font-size:13px;color:gray;">
+              <a class="collapsed" data-toggle="collapse" data-parent="#accordion" aria-expanded="false"
+              href="#additionalBuilds" aria-controls="additionalBuilds" style="cursor:pointer;">
+                ( click to expand <%= @build_options.length - 3 %> remaining additional builds )
+              </a>
+            </h6>
+          </div>
+          <div id="additionalBuilds" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingOne">
+
+            <% @build_options[3..-1].each_with_index do |build_option, i| %>
+              <%= render partial: 'option', locals: { build_option: build_option, i: (i + 2) } %>
             <% end %>
-          </ul>
-        <% end %>
-        <% if build_option.raw == 0 && build_option.scraps.count == 0 %>
-          <em style="padding: 20px 0; display: block;">No components required.</em>
-        <% end %>
+          </div>
+        </div>
       </div>
+    <% else %>
+      <% @build_options.each_with_index do |build_option, i| %>
+        <%= render partial: 'option', locals: { build_option: build_option, i: i } %>
+      <% end %>
     <% end %>
   </div>
   <div class="actions">
