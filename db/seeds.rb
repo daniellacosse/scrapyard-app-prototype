@@ -4,7 +4,7 @@ require "csv"
 
 def secret(secret_name)
 	puts Rails.application.secrets
-	Rails.application.secrets["_SECRET_" + secret_name]
+	Rails.application.secrets[secret_name]
 end
 
 def make_collec_from_csv(url)
@@ -31,27 +31,27 @@ def make_collec_from_google(id)
 end
 
 ### SCRIPT BEGIN ###
-weapons = make_collec_from_google(secret("WEAPON_GSHEET_ID")).map do |weapon|
+weapons = make_collec_from_google(secret(:weapon_gsheet_id)).map do |weapon|
 	weapon["type"] = "WPN"
 	weapon["class_id"] = weapon["wpn_id"]
 	weapon
 end
 
-limbs = make_collec_from_google(secret("LIMB_GSHEEET_ID")).map do |limb|
+limbs = make_collec_from_google(secret(:limb_gsheeet_id)).map do |limb|
 	limb["type"] = "LMB"
 	limb["class_id"] = limb["lmb_id"]
 	limb
 end
 
-addons = make_collec_from_google(secret("ADD_GSHEET_ID")).map do |add|
+addons = make_collec_from_google(secret(:add_gsheet_id)).map do |add|
 	add["type"] = "ADD"
 	add["class_id"] = add["add_id"]
 	add
 end
 
 modules = weapons + limbs + addons
-scraps = make_collec_from_google secret("SCRAP_GSHEET_ID")
-blueprints = make_collec_from_csv secret("BLUEPRINT_PROCESS_CSV_URL")
+scraps = make_collec_from_google secret(:scrap_gheet_id)
+blueprints = make_collec_from_csv secret(:blueprint_process_csv_url)
 
 scraps.each do |scrap_data|
 	scrap = Scrap.create name: scrap_data["name"]
