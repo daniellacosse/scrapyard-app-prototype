@@ -54,7 +54,6 @@
 <section id="game-state">
   <% if @game_state.game.has_started %>
 
-    <% if @game_state.is_my_turn %>
       <div class="panel panel-default">
           <div class="panel-heading" role="tab" id="headingOne">
               <h4 class="panel-title">
@@ -64,10 +63,12 @@
               </h4>
           </div>
           <div id="takeCards" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingOne">
+            <% if @game_state.is_my_turn %>
               <!-- SCRAP FORM -->
               <p>
                   <%= render "scrap_holds/form", game_state: @game_state %>
               </p>
+            <% end %>
 
               <!-- BLUEPRINT FORM  -->
               <p>
@@ -75,7 +76,6 @@
               </p>
           </div>
       </div>
-    <% end %>
 
     <!-- RAW MATERIALS -->
     <p id="player-materials" style="color: red;">
