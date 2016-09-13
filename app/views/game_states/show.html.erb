@@ -1,12 +1,12 @@
 <script>
      var time = new Date().getTime();
-     $(document.body).bind("mousemove keypress", function(e) {
+     $(document.body).bind("mousemove keyup", function(e) {
          time = new Date().getTime();
      });
 
      function refresh() {
          if(new Date().getTime() - time >= 10000)
-             window.location.reload(true);
+             document.location.reload();
          else
              setTimeout(refresh, 3000);
      }
@@ -14,21 +14,9 @@
      setTimeout(refresh, 3000);
 </script>
 
-<% if @game_state.is_my_turn %>
-  <h1 style="color:green;">
-    <strong>Game #</strong> <%= @game_state.game.guid %>
-  </h1>
-
-  <style>
-    body {
-      background: rgb(184, 214, 193) !important;
-    }
-  </style>
-<% else %>
   <h1>
     <strong>Game #</strong> <%= @game_state.game.guid %>
   </h1>
-<% end %>
 
 <p>
   <h3>Players:</h3>
@@ -36,41 +24,23 @@
     <% @game_state.siblings.each do |player_state| %>
       <tr width="100%">
         <td>
-          <% if player_state.is_my_turn %>
-            <span style="color: green;">
-              <%= player_state.player.email %>
-            </span>
-          <% else %>
-            <span>
-              <%= player_state.player.email %>
-            </span>
-          <% end %>
+          <span><%= player_state.player.email %></span>
 
           <% if player_state.player.id == current_player.id %>
-            <% if player_state.is_my_turn %>
-              <b style="color:green;">(me)</b>
-            <% else %>
               <b>(me)</b>
-            <% end %>
           <% end %>
         </td>
 
         <td width="75">
-          <% if player_state.player.id == current_player.id %>
-            <% if player_state.is_my_turn %>
-              <%= button_to 'End Turn', game_state_path(@game_state), {method: :put, params: { is_my_turn: false }, class: 'btn btn-danger'}%>
-            <% end %>
-          <% elsif @game_state.game.has_started && !@game_state.is_my_turn %>
-            <%= button_to 'Trade', new_game_state_trade_path(player_state), method: :get %>
-          <% end %>
-
-          <% unless @game_state.game.has_started %>
+          <% if !@game_state.game.has_started %>
             <% if player_state.is_ready %>
               <span style="color: green;">Ready!</span>
             <% end %>
             <% if player_state.player.id == current_player.id && !player_state.is_ready %>
               <%= button_to 'Ready', game_state_path(@game_state), method: :put, params: { is_ready: true }, class: 'btn btn-success' %>
             <% end %>
+          <% elsif player_state.player.id != current_player.id %>
+            <%= button_to 'Trade', new_game_state_trade_path(player_state), method: :get %>
           <% end %>
         </td>
       </tr>
@@ -80,22 +50,20 @@
 
 <section id="game-state">
   <% if @game_state.game.has_started %>
-
+    <div id="accordion" class="panel-group">
       <div class="panel panel-default">
           <div class="panel-heading" role="tab" id="headingOne">
               <h4 class="panel-title">
-                  <a data-toggle="collapse" data-parent="#accordion" href="#takeCards" aria-expanded="true" aria-controls="takeCards">
+                  <a data-toggle="collapse" data-parent="#accordion" href="#takeCards" aria-expanded="false" aria-controls="takeCards">
                       Take Cards
                   </a>
               </h4>
           </div>
-          <div id="takeCards" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingOne">
-            <% if @game_state.is_my_turn %>
+          <div id="takeCards" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingOne">
               <!-- SCRAP FORM -->
               <p>
                   <%= render "scrap_holds/form", game_state: @game_state %>
               </p>
-            <% end %>
 
               <!-- BLUEPRINT FORM  -->
               <p>
@@ -103,6 +71,7 @@
               </p>
           </div>
       </div>
+    </div>
 
     <!-- RAW MATERIALS -->
     <p id="player-materials" style="color: red;">
@@ -115,12 +84,45 @@
         <div class="panel panel-default">
             <div class="panel-heading" role="tab" id="headingOne">
                 <h4 class="panel-title">
-                    <a data-toggle="collapse" data-parent="#accordion" href="#heldScraps" aria-expanded="true" aria-controls="heldScraps">
+                    <a data-toggle="collapse" data-parent="#accordion" href="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                      Held Recipes (<%= @game_state.blueprint_holds.count %>)
+                    </a>
+                </h4>
+            </div>
+            <div id="collapseOne" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingOne">
+                <table width="100%" id="held-blueprints" style="color: blue;">
+                  <% if @game_state.blueprint_holds.count > 0 %>
+                    <% @game_state.blueprint_holds.each do |hold| %>
+                      <% if !!hold.blueprint %>
+                        <tr>
+                          <td>
+                            <%= hold.blueprint.name.titleize %>
+                          </td>
+                              <td width="65">
+                                <%= button_to 'Build', new_blueprint_hold_module_hold_path(hold), method: :get %>
+                              </td>
+                            <td width="65">
+                              <%= button_to 'Pass', hold, method: :delete %>
+                            </td>
+                        </tr>
+                      <% end %>
+                    <% end %>
+                <% else %>
+                    No Held Blueprints
+                    <% end %>
+                </table>
+            </div>
+        </div>
+
+        <div class="panel panel-default">
+            <div class="panel-heading" role="tab" id="headingTwo">
+                <h4 class="panel-title">
+                    <a data-toggle="collapse" data-parent="#accordion" href="#heldScraps" aria-expanded="false" aria-controls="heldScraps">
                         Held Scraps (<%= @game_state.scrap_holds.count %>)
                     </a>
                 </h4>
             </div>
-            <div id="heldScraps" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingOne">
+            <div id="heldScraps" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingTwo">
                 <table width="100%" id="held-scraps" style="color: gray;">
                     <% if @game_state.scrap_holds.count > 0 %>
                     <% @game_state.scrap_holds.each do |hold| %>
@@ -132,11 +134,9 @@
                         <td width="100" style="color: green;">
                           Value: $<%= hold.value %>
                         </td>
-                        <% unless @game_state.is_my_turn %>
                           <td width="65">
                             <%= button_to 'Sell', hold, method: :delete, params: { sell: true }, class: 'btn btn-success'  %>
                           </td>
-                        <% end %>
                         <td width="65">
                           <%= button_to 'Discard', hold, method: :delete, data: { confirm: 'Are you sure?' }, class: 'btn btn-danger' %>
                         </td>
@@ -145,41 +145,6 @@
                     <% end %>
                 <% else %>
                     No Held Scraps
-                    <% end %>
-                </table>
-            </div>
-        </div>
-
-        <div class="panel panel-default">
-            <div class="panel-heading" role="tab" id="headingTwo">
-                <h4 class="panel-title">
-                    <a class="collapsed" data-toggle="collapse" data-parent="#accordion" href="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
-                      Held Blueprints (<%= @game_state.blueprint_holds.count %>)
-                    </a>
-                </h4>
-            </div>
-            <div id="collapseTwo" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingTwo">
-                <table width="100%" id="held-blueprints" style="color: blue;">
-                  <% if @game_state.blueprint_holds.count > 0 %>
-                    <% @game_state.blueprint_holds.each do |hold| %>
-                      <% if !!hold.blueprint %>
-                        <tr>
-                          <td>
-                            <%= hold.blueprint.name.titleize %>
-                          </td>
-                            <% if !@game_state.is_my_turn %>
-                              <td width="65">
-                                <%= button_to 'Build', new_blueprint_hold_module_hold_path(hold), method: :get %>
-                              </td>
-                            <% end %>
-                            <td width="65">
-                              <%= button_to 'Pass', hold, method: :delete %>
-                            </td>
-                        </tr>
-                      <% end %>
-                    <% end %>
-                <% else %>
-                    No Held Blueprints
                     <% end %>
                 </table>
             </div>

@@ -5,7 +5,7 @@ class ScrapHoldsController < ApplicationController
     @game_state = GameState.find(params[:game_state_id])
 
     hold_params[:batch_ids]
-      .split(/\s*[^a-zA-Z0-9]\s+|\s+/)
+      .split(/,\s?/)
       .reject(&:empty?)
       .each do |id|
         scrap_id, scrap_value = *id.split("-")
