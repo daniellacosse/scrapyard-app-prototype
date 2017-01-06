@@ -4,11 +4,12 @@ class ApplicationController < ActionController::Base
   protect_from_forgery with: :exception
 
   protected
+
   def authenticate_player!
     if player_signed_in?
       super
     else
-      redirect_to new_player_session_path, notice: "Please Login"
+      redirect_to new_player_session_path, notice: 'Please Login'
     end
   end
 end

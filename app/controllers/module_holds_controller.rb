@@ -1,4 +1,4 @@
-require "json"
+require 'json'
 
 class ModuleHoldsController < ApplicationController
   before_action :set_blueprint_hold, only: [:new, :create]
@@ -34,6 +34,7 @@ class ModuleHoldsController < ApplicationController
   end
 
   private
+
   def hold_params
     params.require(:module_hold).permit(:build)
   end

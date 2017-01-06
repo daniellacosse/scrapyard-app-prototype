@@ -18,6 +18,8 @@ class GameStatesController < ApplicationController
 
       redirect_to games_url
     else
+      @scraps_grid = initialize_grid(@game_state.scrap_holds, include: :scrap)
+
       render :show
     end
   end

@@ -1,29 +1,51 @@
-<script>
-     var time = new Date().getTime();
-     $(document.body).bind("mousemove keyup", function(e) {
-         time = new Date().getTime();
-     });
+<% if !@game_state.is_my_turn %>
+  <script>
+       var time = new Date().getTime();
+       $(document.body).bind("mousemove keyup", function(e) {
+           time = new Date().getTime();
+       });
 
-     function refresh() {
-         if(new Date().getTime() - time >= 10000)
-             document.location.reload();
-         else
-             setTimeout(refresh, 3000);
-     }
+       function refresh() {
+           if(new Date().getTime() - time >= 10000)
+               document.location.reload();
+           else
+               setTimeout(refresh, 3000);
+       }
 
-     setTimeout(refresh, 3000);
-</script>
+       setTimeout(refresh, 3000);
+  </script>
+<% else %>
+  <div class="modal fade in" tabindex="-1" role="dialog" style="display: block; background: rgba(0, 0, 0, 0.5);">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header" style="color: white; background: green;">
+          <h4 class="modal-title">It's your turn! Add Cards...</h4>
+        </div>
+        <div class="modal-body">
+           <input type="text" autofocus="true" placeholder="list ids here" style="font-size: 30px;"/>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-success">Submit Cards & Pass Turn</button>
+        </div>
+      </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+  </div><!-- /.modal -->
+<% end %>
 
-  <h1>
-    <strong>Game #</strong> <%= @game_state.game.guid %>
-  </h1>
+<h1>
+  <strong>Game #</strong> <%= @game_state.game.guid %>
+</h1>
+
+<nav style="float: right;">
+  <a href="#sidebar">Show Game Log</a> |
+</nav>
 
 <p>
   <h3>Players:</h3>
   <table id="current-players" width="100%">
     <% @game_state.siblings.each do |player_state| %>
       <tr width="100%">
-        <td>
+        <td style="<%= player_state.is_my_turn ? 'color: green;' : '' %>">
           <span><%= player_state.player.email %></span>
 
           <% if player_state.player.id == current_player.id %>
@@ -40,7 +62,7 @@
               <%= button_to 'Ready', game_state_path(@game_state), method: :put, params: { is_ready: true }, class: 'btn btn-success' %>
             <% end %>
           <% elsif player_state.player.id != current_player.id %>
-            <%= button_to 'Trade', new_game_state_trade_path(player_state), method: :get %>
+            <%= button_to 'View Inventory/Trade', new_game_state_trade_path(player_state), method: :get %>
           <% end %>
         </td>
       </tr>
@@ -48,31 +70,18 @@
   </table>
 </p>
 
+<ul id="sidebar">
+  <h2>Game Log:</h2>
+  <a href="#">&times; Hide</a>
+  <% @game_state.messages.each do |message| %>
+    <li>
+      <%= message.text %>
+    </li>
+  <% end %>
+</ul>
+
 <section id="game-state">
   <% if @game_state.game.has_started %>
-    <div id="accordion" class="panel-group">
-      <div class="panel panel-default">
-          <div class="panel-heading" role="tab" id="headingOne">
-              <h4 class="panel-title">
-                  <a data-toggle="collapse" data-parent="#accordion" href="#takeCards" aria-expanded="false" aria-controls="takeCards">
-                      Take Cards
-                  </a>
-              </h4>
-          </div>
-          <div id="takeCards" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingOne">
-              <!-- SCRAP FORM -->
-              <p>
-                  <%= render "scrap_holds/form", game_state: @game_state %>
-              </p>
-
-              <!-- BLUEPRINT FORM  -->
-              <p>
-                  <%= render "blueprint_holds/form", game_state: @game_state %>
-              </p>
-          </div>
-      </div>
-    </div>
-
     <!-- RAW MATERIALS -->
     <p id="player-materials" style="color: red;">
         <h3>
@@ -92,7 +101,7 @@
             <div id="collapseOne" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingOne">
                 <table width="100%" id="held-blueprints" style="color: blue;">
                   <% if @game_state.blueprint_holds.count > 0 %>
-                    <% @game_state.blueprint_holds.each do |hold| %>
+                  <% @game_state.blueprint_holds.each do |hold| %>
                       <% if !!hold.blueprint %>
                         <tr>
                           <td>
@@ -109,7 +118,7 @@
                     <% end %>
                 <% else %>
                     No Held Blueprints
-                    <% end %>
+                  <% end %>
                 </table>
             </div>
         </div>
@@ -117,36 +126,34 @@
         <div class="panel panel-default">
             <div class="panel-heading" role="tab" id="headingTwo">
                 <h4 class="panel-title">
-                    <a data-toggle="collapse" data-parent="#accordion" href="#heldScraps" aria-expanded="false" aria-controls="heldScraps">
+                    <a data-toggle="collapse" data-parent="#accordion" href="#heldScraps" aria-expanded="true" aria-controls="heldScraps">
                         Held Scraps (<%= @game_state.scrap_holds.count %>)
                     </a>
                 </h4>
             </div>
-            <div id="heldScraps" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingTwo">
-                <table width="100%" id="held-scraps" style="color: gray;">
-                    <% if @game_state.scrap_holds.count > 0 %>
-                    <% @game_state.scrap_holds.each do |hold| %>
-                    <% if !!hold.scrap %>
-                    <tr>
-                        <td>
-                          <%= hold.scrap.name %>
-                        </td>
-                        <td width="100" style="color: green;">
-                          Value: $<%= hold.value %>
-                        </td>
-                          <td width="65">
-                            <%= button_to 'Sell', hold, method: :delete, params: { sell: true }, class: 'btn btn-success'  %>
-                          </td>
-                        <td width="65">
-                          <%= button_to 'Discard', hold, method: :delete, data: { confirm: 'Are you sure?' }, class: 'btn btn-danger' %>
-                        </td>
-                    </tr>
-                    <% end %>
-                    <% end %>
-                <% else %>
-                    No Held Scraps
-                    <% end %>
-                </table>
+            <div id="heldScraps" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingTwo">
+              <% if @game_state.scrap_holds.count > 0 %>
+              <%# form_for @game_state.scrap_holds do |f| %>
+                  <%= grid(@scraps_grid) do |g|
+                    g.column do |hold|
+                      # f.check_box hold, {multiple: true}
+                      check_box hold, {multiple: true}
+                    end
+
+                    g.column name: "name", attribute: "name", assoc: :scrap do |hold|
+                      hold.scrap.name
+                    end
+
+                    g.column name: "value", attribute: "value"  do |hold|
+                      hold.value
+                    end
+                  end -%>
+                  <%#= f.submit 'Sell Selected', method: :delete, params: { sell: true }, class: 'btn btn-success' %>
+                  <%#= f.submit 'Discard Selected', method: :delete, data: { confirm: 'Are you sure?' }, class: 'btn btn-danger' %>
+                <%# end %>
+              <% else %>
+                No Held Scraps
+              <% end %>
             </div>
         </div>
 
@@ -154,7 +161,7 @@
             <div class="panel-heading" role="tab" id="headingThree">
                 <h4 class="panel-title">
                     <a class="collapsed" data-toggle="collapse" data-parent="#accordion" href="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
-                        Held Scrapper Guts (<%= @game_state.module_holds.count %>)
+                        Held Guts (<%= @game_state.module_holds.count %>)
                     </a>
                 </h4>
             </div>
