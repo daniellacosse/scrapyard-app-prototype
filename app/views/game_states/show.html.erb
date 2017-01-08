@@ -122,7 +122,7 @@
                             <%= hold.blueprint.name.titleize %>
                           </td>
                               <td width="65">
-                                <% if @game_state.contestant.eng_lvl >= hold.blueprint.rank %>
+                                <% if @game_state.contestant.eng_lvl.to_i >= hold.blueprint.rank.to_i %>
                                   <%= button_to 'Build', new_blueprint_hold_module_hold_path(hold), method: :get %>
                                 <% else %>
                                   <span style="color: red;">Must Commission.</span>
