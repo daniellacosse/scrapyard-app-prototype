@@ -151,13 +151,7 @@
             </div>
             <div id="heldScraps" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingTwo">
               <% if @game_state.scrap_holds.count > 0 %>
-              <%# form_for @game_state.scrap_holds do |f| %>
                   <%= grid(@scraps_grid) do |g|
-                    g.column do |hold|
-                      # f.check_box hold, {multiple: true}
-                      check_box hold, {multiple: true}
-                    end
-
                     g.column name: "name", attribute: "name", assoc: :scrap do |hold|
                       hold.scrap.name
                     end
@@ -165,10 +159,17 @@
                     g.column name: "value", attribute: "value"  do |hold|
                       hold.value
                     end
+
+                    g.column do |hold|
+                      "Sell"
+                      # button_to 'Sell', , class: 'btn btn-success'
+                      button_to 'Sell', scrap_hold_path(hold), method: :delete, params: {sell: true}, class: 'btn btn-success'
+                    end
+
+                    g.column do |hold|
+                      button_to 'Discard', scrap_hold_path(hold), data: { confirm: 'Are you sure?' }, method: :delete, class: 'btn btn-danger'
+                    end
                   end -%>
-                  <%#= f.submit 'Sell Selected', method: :delete, params: { sell: true }, class: 'btn btn-success' %>
-                  <%#= f.submit 'Discard Selected', method: :delete, data: { confirm: 'Are you sure?' }, class: 'btn btn-danger' %>
-                <%# end %>
               <% else %>
                 No Held Scraps
               <% end %>
