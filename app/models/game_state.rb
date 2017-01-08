@@ -1,6 +1,7 @@
 class GameState < ActiveRecord::Base
 	belongs_to :game
 	belongs_to :player
+	belongs_to :contestant
 
 	has_many :messages, dependent: :destroy
 
@@ -86,6 +87,63 @@ class GameState < ActiveRecord::Base
 			end
 
 			result
+		end
+	end
+
+	def add_scrap_hold(id)
+		scrap_id, scrap_value = *id.split("-")
+		if !!Scrap.find(scrap_id)
+			hold = ScrapHold.create(scrap_id: scrap_id.to_i, value: scrap_value.to_i)
+
+			if hold.persisted?
+				scrap = hold.scrap
+				scrap_holds << hold
+
+				siblings.includes(:blueprints).each do |sibling|
+					matches = []
+					alert_text = ""
+
+					if sibling.id == id
+						matches = sibling.blueprints.to_a.select { |bp| bp.requires?(scrap) }
+
+						alert_text = <<-HEREDOC
+Note!: The #{scrap.name} you just drew could be used to help brew any of the following:
+#{matches.map(&:name).join(', ')}
+						HEREDOC
+					else
+						matches = sibling.blueprints.to_a.select do |bp|
+							!sibling.holds?(scrap) && bp.requires?(scrap)
+						end
+
+						alert_text = <<-HEREDOC
+#{player.email} drew a(n) #{scrap.name}!
+(You need one for: #{matches.map(&:name).join(', ')}.)
+HEREDOC
+					end
+
+					if matches.length > 0
+						Message.create(game_state_id: sibling.id, text: alert_text)
+					end
+				end
+			end
+		else
+			return "Unable to create scrap hold."
+		end
+	end
+
+	def add_blueprint_hold(module_class, class_id)
+		found_module = ScrapperModule.find_by(module_class: module_class, class_id: class_id.to_i)
+
+		if !!found_module
+			hold = BlueprintHold.create(
+				blueprint_id: found_module.blueprint_id, game_id: game.id
+			)
+
+			if hold.persisted?
+				blueprint_holds << hold
+			else
+				return "Unable to create blueprint hold."
+			end
 		end
 	end
 end

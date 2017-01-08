@@ -15,21 +15,23 @@
        setTimeout(refresh, 3000);
   </script>
 <% else %>
-  <div class="modal fade in" tabindex="-1" role="dialog" style="display: block; background: rgba(0, 0, 0, 0.5);">
-    <div class="modal-dialog" role="document">
-      <div class="modal-content">
-        <div class="modal-header" style="color: white; background: green;">
-          <h4 class="modal-title">It's your turn! Add Cards...</h4>
-        </div>
-        <div class="modal-body">
-           <input type="text" autofocus="true" placeholder="list ids here" style="font-size: 30px;"/>
-        </div>
-        <div class="modal-footer">
-          <button type="submit" class="btn btn-success">Submit Cards & Pass Turn</button>
-        </div>
-      </div><!-- /.modal-content -->
-    </div><!-- /.modal-dialog -->
-  </div><!-- /.modal -->
+  <%= form_tag "/game_states/#{@game_state.id}/holds" do %>
+    <div class="modal fade in" tabindex="-1" role="dialog" style="display: block; background: rgba(0, 0, 0, 0.5);">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header" style="color: white; background: green;">
+            <h4 class="modal-title">It's your turn! Add Cards...</h4>
+          </div>
+          <div class="modal-body">
+             <input name="batch_ids" type="text" autofocus="true" placeholder="list ids here" style="font-size: 30px;" />
+          </div>
+          <div class="modal-footer">
+            <%= submit_tag 'Submit Cards & Pass Turn', class: 'btn btn-success' %>
+          </div>
+        </div><!-- /.modal-content -->
+      </div><!-- /.modal-dialog -->
+    </div><!-- /.modal -->
+  <% end %>
 <% end %>
 
 <h1>
@@ -37,7 +39,7 @@
 </h1>
 
 <nav style="float: right;">
-  <a href="#sidebar">Show Game Log</a> |
+  <a href="#sidebar">Show Game Log</a>
 </nav>
 
 <p>
@@ -53,13 +55,23 @@
           <% end %>
         </td>
 
+        <td style="color: gray;">
+          <%= player_state.contestant.name %>
+        </td>
+
         <td width="75">
           <% if !@game_state.game.has_started %>
             <% if player_state.is_ready %>
               <span style="color: green;">Ready!</span>
             <% end %>
             <% if player_state.player.id == current_player.id && !player_state.is_ready %>
-              <%= button_to 'Ready', game_state_path(@game_state), method: :put, params: { is_ready: true }, class: 'btn btn-success' %>
+              <%= form_for @game_state, method: :put do |f| %>
+                <%= f.hidden_field :is_ready, value: true %>
+
+                <%= collection_select :game_state, :contestant_id, Contestant.all, :id, :name, {disabled: -> (contestant) { @game_state.siblings.collect(&:contestant).include? contestant } } %>
+
+                <%= f.submit 'Ready', class: 'btn btn-success' %>
+              <% end %>
             <% end %>
           <% elsif player_state.player.id != current_player.id %>
             <%= button_to 'View Inventory/Trade', new_game_state_trade_path(player_state), method: :get %>

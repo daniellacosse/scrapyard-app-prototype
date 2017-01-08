@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160911014028) do
+ActiveRecord::Schema.define(version: 20170108025644) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -52,10 +52,21 @@ ActiveRecord::Schema.define(version: 20160911014028) do
     t.datetime "updated_at", null: false
   end
 
+  create_table "contestants", force: :cascade do |t|
+    t.string   "name"
+    t.integer  "eng_lvl"
+    t.integer  "body_lvl"
+    t.integer  "pilot_lvl"
+    t.integer  "chassis_lvl"
+    t.datetime "created_at",  null: false
+    t.datetime "updated_at",  null: false
+  end
+
   create_table "game_states", force: :cascade do |t|
     t.integer  "player_id"
     t.integer  "player_number"
     t.integer  "game_id"
+    t.integer  "contestant_id"
     t.integer  "raw",           default: 0
     t.boolean  "is_ready"
     t.boolean  "is_my_turn"
@@ -183,7 +194,7 @@ ActiveRecord::Schema.define(version: 20160911014028) do
     t.integer  "solicited_player_state_id"
     t.integer  "solicited_raw_cost",        default: 0
     t.boolean  "is_revised",                default: false
-    t.boolean  "is_agreed",                 default: true
+    t.boolean  "is_agreed",                 default: false
     t.datetime "created_at",                                null: false
     t.datetime "updated_at",                                null: false
   end

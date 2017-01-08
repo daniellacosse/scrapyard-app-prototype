@@ -1,6 +1,6 @@
 class GameStatesController < ApplicationController
   before_action :authenticate_player!
-  before_action :set_state, only: [:show, :update, :destroy]
+  before_action :set_state, only: [:show, :update, :destroy, :holds]
 
   # GET /game_states/:id
   def show
@@ -19,6 +19,7 @@ class GameStatesController < ApplicationController
       redirect_to games_url
     else
       @scraps_grid = initialize_grid(@game_state.scrap_holds, include: :scrap)
+      @contestants = Contestant.all
 
       render :show
     end
@@ -45,7 +46,8 @@ class GameStatesController < ApplicationController
 
   # PUT/PATCH /game_states/:id
   def update
-    if params[:is_ready]
+    if game_state_params[:is_ready]
+      @game_state.contestant_id = game_state_params[:contestant_id]
       @game_state.set_ready
     elsif params[:is_my_turn] == "false"
       @next_player_state = @game_state.siblings.find do |state|
@@ -65,6 +67,35 @@ class GameStatesController < ApplicationController
     redirect_to game_state_path(@game_state)
   end
 
+  def holds
+    flash[:error] ||= []
+
+    params[:batch_ids]
+    .split(/,\s?/)
+    .reject(&:empty?)
+    .each do |id|
+      classifier = case id[0]
+        when "0"
+          "SCRAP"
+        when "1"
+          "LMB"
+        when "2"
+          "WPN"
+        when "3"
+          "ADD"
+      end
+      genuine_id = id[1..-1]
+
+      if classifier == "SCRAP"
+        flash[:error] << @game_state.add_scrap_hold genuine_id
+      else
+        flash[:error] << @game_state.add_blueprint_hold classifier, genuine_id
+      end
+    end
+
+    redirect_to game_state_path(@game_state)
+  end
+
   # DELETE /game_states/:id
   def destroy
     @game_state.destroy
@@ -75,5 +106,9 @@ class GameStatesController < ApplicationController
   private
   def set_state
     @game_state = GameState.find params[:id]
+  end
+
+  def game_state_params
+    params.require(:game_state)
   end
 end

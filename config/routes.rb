@@ -10,5 +10,7 @@ Rails.application.routes.draw do
     end
   end
 
+  post '/game_states/:id/holds', to: 'game_states#holds'
+
   root to: "games#index"
 end

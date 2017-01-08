@@ -4,6 +4,7 @@ class CreateGameStates < ActiveRecord::Migration
       t.integer :player_id
       t.integer :player_number
       t.integer :game_id
+      t.integer :contestant_id
       t.integer :raw, default: 0
       t.boolean :is_ready
       t.boolean :is_my_turn

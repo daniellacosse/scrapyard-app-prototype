@@ -50,6 +50,17 @@ end
 modules = weapons + limbs + addons
 scraps = make_collec_from_google secret(:scrap_gsheet_id)
 blueprints = make_collec_from_csv secret(:blueprint_process_csv_url)
+contestants = make_collec_from_google secret(:contestant_gsheet_id)
+
+contestants.each do |contestant_data|
+	Contestant.create({
+		name: contestant_data["name"],
+		eng_lvl: contestant_data["eng_lvl"],
+		body_lvl: contestant_data["body_lvl"],
+		pilot_lvl: contestant_data["pilot_lvl"],
+		chassis_lvl: contestant_data["chassis_lvl"]
+	})
+end
 
 scraps.each do |scrap_data|
 	scrap = Scrap.create name: scrap_data["name"]
