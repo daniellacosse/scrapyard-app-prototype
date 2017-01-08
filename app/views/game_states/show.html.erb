@@ -55,9 +55,11 @@
           <% end %>
         </td>
 
-        <td style="color: gray;">
-          <%= player_state.contestant.name %>
-        </td>
+        <% if @game_state.game.has_started %>
+          <td style="color: gray;">
+            <%= player_state.contestant.name %>
+          </td>
+        <% end %>
 
         <td width="75">
           <% if !@game_state.game.has_started %>
@@ -120,7 +122,11 @@
                             <%= hold.blueprint.name.titleize %>
                           </td>
                               <td width="65">
-                                <%= button_to 'Build', new_blueprint_hold_module_hold_path(hold), method: :get %>
+                                <% if @game_state.contestant.eng_lvl >= hold.blueprint.rank %>
+                                  <%= button_to 'Build', new_blueprint_hold_module_hold_path(hold), method: :get %>
+                                <% else %>
+                                  <span style="color: red;">Must Commission.</span>
+                                <% end %>
                               </td>
                             <td width="65">
                               <%= button_to 'Pass', hold, method: :delete %>

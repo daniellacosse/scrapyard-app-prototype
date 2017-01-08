@@ -9,6 +9,11 @@ class ScrapHold < ActiveRecord::Base
 
 		transaction do
 			new_value = game_state.raw.to_i + value.to_i
+
+			if game_state.contestant.name.start_with? "Hotei"
+				new_value += 1
+			end
+
 			success = game_state.update(raw: new_value) && self.destroy
 		end
 

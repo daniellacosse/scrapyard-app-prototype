@@ -11,6 +11,10 @@ class BlueprintHold < ActiveRecord::Base
 
     build_list(my_resource_pool, blueprint.requirements.to_a)
       .select do |build|
+        if game_state.contestant.name == "Anansi"
+          return build.met_requirements >= [2, blueprint.requirements.length - 1].max
+        end
+
         build.met_requirements == blueprint.requirements.length
       end
       .uniq do |build|

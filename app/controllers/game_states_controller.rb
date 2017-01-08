@@ -75,23 +75,33 @@ class GameStatesController < ApplicationController
     .reject(&:empty?)
     .each do |id|
       classifier = case id[0]
-        when "0"
-          "SCRAP"
-        when "1"
-          "LMB"
-        when "2"
-          "WPN"
-        when "3"
-          "ADD"
+      when "0" then "SCRAP"
+      when "1" then "LMB"
+      when "2" then "WPN"
+      when "3" then "ADD"
       end
+
       genuine_id = id[1..-1]
 
       if classifier == "SCRAP"
-        flash[:error] << @game_state.add_scrap_hold genuine_id
+        flash[:error] << @game_state.add_scrap_hold(genuine_id)
       else
-        flash[:error] << @game_state.add_blueprint_hold classifier, genuine_id
+        flash[:error] << @game_state.add_blueprint_hold(classifier, genuine_id)
       end
     end
+
+    @next_player_state = @game_state.siblings.find do |state|
+      state.player_number == @game_state.player_number + 1
+    end
+
+    unless @next_player_state
+      @next_player_state = @game_state.siblings.find do |state|
+        state.player_number == 0
+      end
+    end
+
+    @game_state.update(is_my_turn: false)
+    @next_player_state.update(is_my_turn: true)
 
     redirect_to game_state_path(@game_state)
   end

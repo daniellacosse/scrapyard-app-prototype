@@ -126,6 +126,8 @@ HEREDOC
 					end
 				end
 			end
+
+			return nil
 		else
 			return "Unable to create scrap hold."
 		end
@@ -141,6 +143,7 @@ HEREDOC
 
 			if hold.persisted?
 				blueprint_holds << hold
+				return nil
 			else
 				return "Unable to create blueprint hold."
 			end
