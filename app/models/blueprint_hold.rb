@@ -8,19 +8,29 @@ class BlueprintHold < ActiveRecord::Base
 
   def build_options
     my_resource_pool = ResourcePool.new(game_state: game_state)
+    requirement_array = blueprint.requirements.to_a
+    valid_builds = []
 
-    build_list(my_resource_pool, blueprint.requirements.to_a)
-      .select do |build|
-        if game_state.contestant.name == "Anansi"
-          return build.met_requirements >= [2, blueprint.requirements.length - 1].max
+    if game_state.contestant.name == "Anansi"
+      new_requirement_length = [2, requirement_array.length - 1].max
+
+      valid_builds = requirement_array.combination(new_requirement_length).map do |sub_requirements|
+        build_list(ResourcePool.new(game_state: game_state), sub_requirements).select do |build|
+          build.met_requirements == new_requirement_length
         end
+      end.flatten
 
+    else
+      valid_builds = build_list(my_resource_pool, requirement_array).select do |build|
         build.met_requirements == blueprint.requirements.length
       end
-      .uniq do |build|
-        "raw:#{build.raw}.scraps:#{build.scraps.map(&:name).sort.join(',')}"
-      end
-      .sort { |build| build.raw.to_i }
+    end
+
+    valid_builds
+    .uniq do |build|
+      "raw:#{build.raw}.scraps:#{build.scraps.map(&:name).sort.join(',')}"
+    end
+    .sort { |build| build.raw.to_i }
   end
 
   private
